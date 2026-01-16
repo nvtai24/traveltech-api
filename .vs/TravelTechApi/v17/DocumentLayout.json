@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Nvtai\\Desktop\\TravelTechApi\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{F188802B-08E3-409B-B924-5234E77118AB}|TravelTechApi.csproj|c:\\users\\nvtai\\desktop\\traveltechapi\\controllers\\pingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F188802B-08E3-409B-B924-5234E77118AB}|TravelTechApi.csproj|solutionrelative:controllers\\pingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 237,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "PingController.cs",
+              "DocumentMoniker": "C:\\Users\\Nvtai\\Desktop\\TravelTechApi\\Controllers\\PingController.cs",
+              "RelativeDocumentMoniker": "Controllers\\PingController.cs",
+              "ToolTip": "C:\\Users\\Nvtai\\Desktop\\TravelTechApi\\Controllers\\PingController.cs",
+              "RelativeToolTip": "Controllers\\PingController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-16T08:58:35.205Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
