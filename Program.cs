@@ -1,4 +1,4 @@
-using TravelTechApi.Common.Middleware;
+using TravelTechApi.Extensions;
 
 namespace TravelTechApi
 {
@@ -8,29 +8,16 @@ namespace TravelTechApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
-            // Configure JSON serialization options
-            builder.Services.AddControllers()
-                .AddJsonOptions(options =>
-                {
-                    options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
-                    options.JsonSerializerOptions.WriteIndented = true;
-                });
-
-            // Add global exception handler
-            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-            builder.Services.AddProblemDetails();
-
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            // Add services to the container
+            builder.Services.AddDatabaseConfiguration(builder.Configuration);
+            builder.Services.AddIdentityConfiguration();
+            builder.Services.AddJwtAuthentication(builder.Configuration);
+            builder.Services.AddApplicationServices();
+            builder.Services.AddApiConfiguration();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            
-            // Use global exception handler
+            // Configure the HTTP request pipeline
             app.UseExceptionHandler();
 
             if (app.Environment.IsDevelopment())
@@ -40,9 +27,8 @@ namespace TravelTechApi
             }
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
-
             app.MapControllers();
 
             app.Run();

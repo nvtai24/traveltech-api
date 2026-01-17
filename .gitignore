@@ -56,5 +56,6 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 
-# Log
-*.log
+# file by AI
+*.log 
+*.txt
