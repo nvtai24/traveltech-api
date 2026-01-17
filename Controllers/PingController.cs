@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using TravelTechApi.Common.Extensions;
 
 namespace TravelTechApi.Controllers
 {
@@ -7,10 +7,23 @@ namespace TravelTechApi.Controllers
     [ApiController]
     public class PingController : ControllerBase
     {
+        /// <summary>
+        /// Health check endpoint
+        /// </summary>
         [HttpGet]
         public IActionResult Get()
         {
-            return Ok("Pong");
+            // Using extension method for standardized response
+            return this.Success("Pong", "Service is running");
+        }
+
+        /// <summary>
+        /// Example endpoint that throws an exception (for testing error handling)
+        /// </summary>
+        [HttpGet("error")]
+        public IActionResult GetError()
+        {
+            throw new Exception("This is a test exception");
         }
     }
 }
