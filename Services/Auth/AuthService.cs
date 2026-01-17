@@ -22,6 +22,7 @@ namespace TravelTechApi.Services
         private readonly JwtSettings _jwtSettings;
         private readonly IMapper _mapper;
         private readonly ILogger<AuthService> _logger;
+        private readonly IEmailService _emailService;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
@@ -29,7 +30,8 @@ namespace TravelTechApi.Services
             ITokenService tokenService,
             IOptions<JwtSettings> jwtSettings,
             IMapper mapper,
-            ILogger<AuthService> logger)
+            ILogger<AuthService> logger,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _context = context;
@@ -37,6 +39,7 @@ namespace TravelTechApi.Services
             _jwtSettings = jwtSettings.Value;
             _mapper = mapper;
             _logger = logger;
+            _emailService = emailService;
         }
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
@@ -73,7 +76,22 @@ namespace TravelTechApi.Services
 
             _logger.LogInformation("User created successfully: {UserId}, Email: {Email}", user.Id, user.Email);
 
-            // Generate tokens
+            // Generate email confirmation token
+            var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            // Send confirmation email
+            try
+            {
+                await _emailService.SendEmailConfirmationAsync(user.Email!, user.Id, emailToken);
+                _logger.LogInformation("Confirmation email sent to: {Email}", user.Email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send confirmation email to: {Email}", user.Email);
+                // Don't fail registration if email fails, user can resend later
+            }
+
+            // Generate tokens (user can still get tokens but login will check email confirmation)
             return await GenerateAuthResponse(user);
         }
 
@@ -86,6 +104,13 @@ namespace TravelTechApi.Services
             {
                 _logger.LogWarning("Login failed - user not found: {Email}", loginDto.Email);
                 throw new UnauthorizedException("Invalid email or password");
+            }
+
+            // Check if email is confirmed
+            if (!user.EmailConfirmed)
+            {
+                _logger.LogWarning("Login failed - email not confirmed: {Email}", loginDto.Email);
+                throw new UnauthorizedException("Please confirm your email before logging in. Check your inbox for the confirmation link.");
             }
 
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, loginDto.Password);
@@ -192,6 +217,77 @@ namespace TravelTechApi.Services
 
             await _context.SaveChangesAsync();
             _logger.LogInformation("Revoked {Count} tokens for user: {UserId}", refreshTokens.Count, userId);
+        }
+
+        public async Task<bool> ConfirmEmailAsync(string userId, string token)
+        {
+            _logger.LogInformation("Email confirmation attempt for user: {UserId}", userId);
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                _logger.LogWarning("Email confirmation failed - user not found: {UserId}", userId);
+                throw new NotFoundException("User not found");
+            }
+
+            if (user.EmailConfirmed)
+            {
+                _logger.LogInformation("Email already confirmed for user: {UserId}", userId);
+                return true;
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            if (!result.Succeeded)
+            {
+                _logger.LogWarning("Email confirmation failed for user: {UserId}. Errors: {Errors}",
+                    userId, string.Join(", ", result.Errors.Select(e => e.Description)));
+
+                var errors = result.Errors.Select(e => new ErrorDetail
+                {
+                    Code = e.Code,
+                    Message = e.Description
+                }).ToList();
+
+                throw new BadRequestException("Failed to confirm email", errors);
+            }
+
+            _logger.LogInformation("Email confirmed successfully for user: {UserId}", userId);
+            return true;
+        }
+
+        public async Task ResendConfirmationEmailAsync(string email)
+        {
+            _logger.LogInformation("Resending confirmation email to: {Email}", email);
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                _logger.LogWarning("Resend confirmation failed - user not found: {Email}", email);
+                // Don't reveal that user doesn't exist for security
+                return;
+            }
+
+            if (user.EmailConfirmed)
+            {
+                _logger.LogInformation("Email already confirmed for: {Email}", email);
+                // Don't reveal that email is already confirmed
+                return;
+            }
+
+            // Generate new confirmation token
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            // Send confirmation email
+            try
+            {
+                await _emailService.SendEmailConfirmationAsync(user.Email!, user.Id, token);
+                _logger.LogInformation("Confirmation email resent to: {Email}", email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to resend confirmation email to: {Email}", email);
+                throw new BadRequestException("Failed to send confirmation email. Please try again later.");
+            }
         }
 
         private async Task<AuthResponseDto> GenerateAuthResponse(ApplicationUser user)

@@ -12,6 +12,7 @@ namespace TravelTechApi
             builder.Services.AddDatabaseConfiguration(builder.Configuration);
             builder.Services.AddIdentityConfiguration();
             builder.Services.AddJwtAuthentication(builder.Configuration);
+            builder.Services.AddEmailConfiguration(builder.Configuration);
             builder.Services.AddApplicationServices();
             builder.Services.AddApiConfiguration();
 

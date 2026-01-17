@@ -1,0 +1,116 @@
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using Microsoft.Extensions.Options;
+using MimeKit;
+using TravelTechApi.Common.Settings;
+
+namespace TravelTechApi.Services
+{
+    /// <summary>
+    /// SMTP implementation of email service using MailKit
+    /// </summary>
+    public class SmtpEmailService : IEmailService
+    {
+        private readonly EmailSettings _emailSettings;
+        private readonly ILogger<SmtpEmailService> _logger;
+
+        public SmtpEmailService(
+            IOptions<EmailSettings> emailSettings,
+            ILogger<SmtpEmailService> logger)
+        {
+            _emailSettings = emailSettings.Value;
+            _logger = logger;
+        }
+
+        public async Task SendEmailConfirmationAsync(string email, string userId, string token)
+        {
+            _logger.LogInformation("Sending email confirmation to: {Email}", email);
+
+            var confirmationUrl = $"{_emailSettings.FrontendUrl}/confirm-email?userId={Uri.EscapeDataString(userId)}&token={Uri.EscapeDataString(token)}";
+
+            var htmlBody = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+        .button {{ display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+        .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>🎉 Chào mừng đến với TravelTech!</h1>
+        </div>
+        <div class='content'>
+            <h2>Xác nhận địa chỉ email của bạn</h2>
+            <p>Cảm ơn bạn đã đăng ký tài khoản TravelTech. Để hoàn tất quá trình đăng ký, vui lòng xác nhận địa chỉ email của bạn bằng cách nhấp vào nút bên dưới:</p>
+            
+            <div style='text-align: center;'>
+                <a href='{confirmationUrl}' class='button'>Xác nhận Email</a>
+            </div>
+            
+            <p>Hoặc copy link sau vào trình duyệt:</p>
+            <p style='background: #fff; padding: 10px; border-left: 4px solid #667eea; word-break: break-all;'>{confirmationUrl}</p>
+            
+            <p><strong>Lưu ý:</strong> Link này sẽ hết hạn sau 24 giờ.</p>
+            
+            <p>Nếu bạn không tạo tài khoản này, vui lòng bỏ qua email này.</p>
+        </div>
+        <div class='footer'>
+            <p>&copy; 2026 TravelTech. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>";
+
+            await SendEmailAsync(email, "Xác nhận đăng ký tài khoản TravelTech", htmlBody);
+            _logger.LogInformation("Email confirmation sent successfully to: {Email}", email);
+        }
+
+        public async Task SendEmailAsync(string to, string subject, string htmlBody)
+        {
+            try
+            {
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(_emailSettings.FromName, _emailSettings.FromEmail));
+                message.To.Add(new MailboxAddress("", to));
+                message.Subject = subject;
+
+                var bodyBuilder = new BodyBuilder
+                {
+                    HtmlBody = htmlBody
+                };
+                message.Body = bodyBuilder.ToMessageBody();
+
+                using var client = new SmtpClient();
+
+                _logger.LogDebug("Connecting to SMTP server: {Host}:{Port}", _emailSettings.SmtpHost, _emailSettings.SmtpPort);
+
+                await client.ConnectAsync(
+                    _emailSettings.SmtpHost,
+                    _emailSettings.SmtpPort,
+                    _emailSettings.EnableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None);
+
+                if (!string.IsNullOrEmpty(_emailSettings.SmtpUsername))
+                {
+                    await client.AuthenticateAsync(_emailSettings.SmtpUsername, _emailSettings.SmtpPassword);
+                }
+
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+
+                _logger.LogInformation("Email sent successfully to: {To}", to);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send email to: {To}", to);
+                throw;
+            }
+        }
+    }
+}

@@ -18,6 +18,18 @@ namespace TravelTechApi.Extensions
             // Register scoped services
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IEmailService, SmtpEmailService>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Configure email settings
+        /// </summary>
+        public static IServiceCollection AddEmailConfiguration(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<TravelTechApi.Common.Settings.EmailSettings>(
+                configuration.GetSection("EmailSettings"));
 
             return services;
         }

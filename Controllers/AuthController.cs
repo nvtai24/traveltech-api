@@ -81,6 +81,30 @@ namespace TravelTechApi.Controllers
         }
 
         /// <summary>
+        /// Confirm user email with token
+        /// </summary>
+        [HttpPost("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDto confirmEmailDto)
+        {
+            _logger.LogInformation("POST /api/auth/confirm-email called for userId: {UserId}", confirmEmailDto.UserId);
+            var result = await _authService.ConfirmEmailAsync(confirmEmailDto.UserId, confirmEmailDto.Token);
+            _logger.LogInformation("Email confirmed successfully for userId: {UserId}", confirmEmailDto.UserId);
+            return this.Success(result, "Email confirmed successfully. You can now login.");
+        }
+
+        /// <summary>
+        /// Resend email confirmation
+        /// </summary>
+        [HttpPost("resend-confirmation")]
+        public async Task<IActionResult> ResendConfirmation([FromBody] ResendConfirmationDto resendDto)
+        {
+            _logger.LogInformation("POST /api/auth/resend-confirmation called for email: {Email}", resendDto.Email);
+            await _authService.ResendConfirmationEmailAsync(resendDto.Email);
+            _logger.LogInformation("Confirmation email resent to: {Email}", resendDto.Email);
+            return this.Success("If the email exists and is not confirmed, a confirmation email has been sent.");
+        }
+
+        /// <summary>
         /// Get current user information (requires authentication)
         /// </summary>
         [Authorize]

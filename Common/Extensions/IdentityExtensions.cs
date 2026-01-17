@@ -25,6 +25,9 @@ namespace TravelTechApi.Extensions
 
                 // User settings
                 options.User.RequireUniqueEmail = true;
+
+                // Sign in settings
+                options.SignIn.RequireConfirmedEmail = true;
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();

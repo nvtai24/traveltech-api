@@ -11,5 +11,7 @@ namespace TravelTechApi.Services
         Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
         Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto);
         Task RevokeTokenAsync(string userId);
+        Task<bool> ConfirmEmailAsync(string userId, string token);
+        Task ResendConfirmationEmailAsync(string email);
     }
 }
