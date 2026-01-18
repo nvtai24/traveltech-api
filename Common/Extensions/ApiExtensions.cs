@@ -1,5 +1,6 @@
 using Microsoft.OpenApi.Models;
 using TravelTechApi.Common.Middleware;
+using TravelTechApi.Common.Settings;
 
 namespace TravelTechApi.Extensions
 {
@@ -50,6 +51,54 @@ namespace TravelTechApi.Extensions
                             }
                         },
                         new string[] {}
+                    }
+                });
+            });
+
+            return services;
+        }
+
+        /// <summary>
+        /// Add CORS configuration
+        /// </summary>
+        public static IServiceCollection AddCorsConfiguration(this IServiceCollection services, IConfiguration configuration)
+        {
+            var corsSettings = configuration.GetSection("CorsSettings").Get<CorsSettings>();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("DefaultCorsPolicy", policy =>
+                {
+                    if (corsSettings.AllowedOrigins.Length > 0 && corsSettings.AllowedOrigins[0] != "*")
+                    {
+                        policy.WithOrigins(corsSettings.AllowedOrigins);
+                    }
+                    else
+                    {
+                        policy.AllowAnyOrigin();
+                    }
+
+                    if (corsSettings.AllowedMethods.Length > 0 && corsSettings.AllowedMethods[0] != "*")
+                    {
+                        policy.WithMethods(corsSettings.AllowedMethods);
+                    }
+                    else
+                    {
+                        policy.AllowAnyMethod();
+                    }
+
+                    if (corsSettings.AllowedHeaders.Length > 0 && corsSettings.AllowedHeaders[0] != "*")
+                    {
+                        policy.WithHeaders(corsSettings.AllowedHeaders);
+                    }
+                    else
+                    {
+                        policy.AllowAnyHeader();
+                    }
+
+                    if (corsSettings.AllowCredentials)
+                    {
+                        policy.AllowCredentials();
                     }
                 });
             });

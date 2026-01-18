@@ -14,6 +14,7 @@ namespace TravelTechApi
             builder.Services.AddIdentityConfiguration();
             builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.AddApplicationServices();
+            builder.Services.AddCorsConfiguration(builder.Configuration);
             builder.Services.AddApiConfiguration();
 
             var app = builder.Build();
@@ -28,6 +29,7 @@ namespace TravelTechApi
             }
 
             app.UseHttpsRedirection();
+            app.UseCors("DefaultCorsPolicy");
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
