@@ -39,5 +39,15 @@ namespace TravelTechApi.Services.Cloudinary
         /// Size of the uploaded image in bytes
         /// </summary>
         public long Bytes { get; set; }
+
+        /// <summary>
+        /// Resource type of the uploaded image
+        /// </summary>
+        public string ResourceType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Date and time when the image was uploaded
+        /// </summary>
+        public DateTime CreatedAt { get; set; }
     }
 }

@@ -68,7 +68,7 @@ namespace TravelTechApi.Common.Middleware
                 default:
                     // Handle all other exceptions as internal server errors
                     statusCode = StatusCodes.Status500InternalServerError;
-                    
+
                     // Don't expose internal error details in production
                     var isDevelopment = httpContext.RequestServices
                         .GetRequiredService<IWebHostEnvironment>()

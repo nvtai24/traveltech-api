@@ -18,6 +18,12 @@ namespace TravelTechApi.Data
         /// Refresh tokens table
         /// </summary>
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<Destination> Destinations { get; set; }
+        public DbSet<Location> Locations { get; set; }
+        public DbSet<Region> Regions { get; set; }
+        public DbSet<FAQ> FAQs { get; set; }
+        public DbSet<DestinationSharing> DestinationSharings { get; set; }
+        public DbSet<CloudinaryFileInfo> CloudinaryFileInfos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -43,6 +49,81 @@ namespace TravelTechApi.Data
             {
                 entity.Property(e => e.FirstName).HasMaxLength(100);
                 entity.Property(e => e.LastName).HasMaxLength(100);
+            });
+
+            // Configure Destination
+            builder.Entity<Destination>(entity =>
+            {
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Description).IsRequired();
+                entity.Property(e => e.History).IsRequired();
+                // entity.Property(e => e.Lat).IsRequired();
+                // entity.Property(e => e.Lon).IsRequired();
+                // entity.Property(e => e.VideoUrl).IsRequired();
+                entity.Property(e => e.Tags).IsRequired();
+                entity.Property(e => e.LocationId).IsRequired();
+                entity.HasOne(e => e.Location)
+                    .WithMany(l => l.Destinations)
+                    .HasForeignKey(e => e.LocationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // CloudinaryFileInfo have no navigation property to Destination
+                // So you have to cascade delete manually
+                // entity.HasMany(e => e.Images)
+                //     .WithOne(i => i.Destination)
+                //     .HasForeignKey(e => e.DestinationId)
+                //     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure Location
+            builder.Entity<Location>(entity =>
+            {
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.RegionId).IsRequired();
+                entity.HasOne(e => e.Region)
+                    .WithMany(r => r.Locations)
+                    .HasForeignKey(e => e.RegionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure Region
+            builder.Entity<Region>(entity =>
+            {
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            });
+
+            // Configure FAQ
+            builder.Entity<FAQ>(entity =>
+            {
+                entity.Property(e => e.Question).IsRequired();
+                entity.Property(e => e.Answer).IsRequired();
+                entity.Property(e => e.DestinationId).IsRequired();
+                entity.HasOne(e => e.Destination)
+                    .WithMany(d => d.FAQs)
+                    .HasForeignKey(e => e.DestinationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure DestinationSharing
+            builder.Entity<DestinationSharing>(entity =>
+            {
+                entity.Property(e => e.Comment).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired();
+                entity.Property(e => e.UpdatedAt).IsRequired();
+                entity.Property(e => e.DestinationId).IsRequired();
+                entity.HasOne(e => e.Destination)
+                    .WithMany(d => d.Sharings)
+                    .HasForeignKey(e => e.DestinationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure CloudinaryFileInfo
+            builder.Entity<CloudinaryFileInfo>(entity =>
+            {
+                entity.Property(e => e.PublicId).IsRequired();
+                entity.Property(e => e.Url).IsRequired();
+                entity.Property(e => e.ResourceType).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired();
             });
         }
     }
