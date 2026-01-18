@@ -17,8 +17,6 @@ namespace TravelTechApi.Extensions
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            // Configure JWT Settings
-            services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
             var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
 
             // Add JWT Authentication

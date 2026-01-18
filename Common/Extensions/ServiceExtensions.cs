@@ -1,3 +1,4 @@
+using TravelTechApi.Common.Settings;
 using TravelTechApi.Services;
 
 namespace TravelTechApi.Extensions
@@ -19,6 +20,7 @@ namespace TravelTechApi.Extensions
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailService, SmtpEmailService>();
+            services.AddScoped<ICloudinaryService, Services.Cloudinary.CloudinaryService>();
 
             return services;
         }
@@ -26,10 +28,17 @@ namespace TravelTechApi.Extensions
         /// <summary>
         /// Configure email settings
         /// </summary>
-        public static IServiceCollection AddEmailConfiguration(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddConfigurations(this IServiceCollection services, IConfiguration configuration)
         {
+            // Email Settings
             services.Configure<TravelTechApi.Common.Settings.EmailSettings>(
                 configuration.GetSection("EmailSettings"));
+
+            // JWT Settings
+            services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+
+            // Cloudinary Settings
+            services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
 
             return services;
         }

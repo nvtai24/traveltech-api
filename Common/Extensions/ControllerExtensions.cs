@@ -68,5 +68,16 @@ namespace TravelTechApi.Common.Extensions
                 ApiResponse<object>.FailureResponse(message)
             );
         }
+
+        /// <summary>
+        /// Returns an internal server error response
+        /// </summary>
+        public static IActionResult InternalServerError(this ControllerBase controller, string message = "An internal server error occurred")
+        {
+            return controller.StatusCode(
+                StatusCodes.Status500InternalServerError,
+                ApiResponse<object>.FailureResponse(message)
+            );
+        }
     }
 }

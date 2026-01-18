@@ -9,10 +9,10 @@ namespace TravelTechApi
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container
+            builder.Services.AddConfigurations(builder.Configuration);
             builder.Services.AddDatabaseConfiguration(builder.Configuration);
             builder.Services.AddIdentityConfiguration();
             builder.Services.AddJwtAuthentication(builder.Configuration);
-            builder.Services.AddEmailConfiguration(builder.Configuration);
             builder.Services.AddApplicationServices();
             builder.Services.AddApiConfiguration();
 
