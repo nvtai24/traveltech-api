@@ -4,7 +4,7 @@ namespace TravelTechApi
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +31,9 @@ namespace TravelTechApi
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
+
+            // Seed database with initial data
+            await app.SeedDatabaseAsync();
 
             app.Run();
         }
