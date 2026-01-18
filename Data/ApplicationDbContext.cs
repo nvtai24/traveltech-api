@@ -57,9 +57,9 @@ namespace TravelTechApi.Data
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Description).IsRequired();
                 entity.Property(e => e.History).IsRequired();
-                // entity.Property(e => e.Lat).IsRequired();
-                // entity.Property(e => e.Lon).IsRequired();
-                // entity.Property(e => e.VideoUrl).IsRequired();
+                entity.Property(e => e.Lat).IsRequired();
+                entity.Property(e => e.Lon).IsRequired();
+                entity.Property(e => e.VideoUrl).IsRequired();
                 entity.Property(e => e.Tags).IsRequired();
                 entity.Property(e => e.LocationId).IsRequired();
                 entity.HasOne(e => e.Location)
