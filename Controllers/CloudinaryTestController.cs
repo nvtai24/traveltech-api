@@ -129,13 +129,17 @@
 //         }
 
 //         /// <summary>
-//         /// Upload multiple images to Cloudinary
+//         /// Upload multiple images to Cloudinary in parallel (optimized for bulk uploads)
 //         /// </summary>
 //         /// <param name="files">List of image files to upload</param>
 //         /// <param name="folder">Optional folder name (default: "test")</param>
-//         /// <returns>List of upload results</returns>
+//         /// <param name="maxConcurrency">Maximum number of concurrent uploads (default: 10)</param>
+//         /// <returns>List of upload results with success status for each file</returns>
 //         [HttpPost("upload-multiple")]
-//         public async Task<IActionResult> UploadMultipleImages(List<IFormFile> files, [FromQuery] string folder = "test")
+//         public async Task<IActionResult> UploadMultipleImages(
+//             List<IFormFile> files,
+//             [FromQuery] string folder = "test",
+//             [FromQuery] int maxConcurrency = 10)
 //         {
 //             try
 //             {
@@ -144,44 +148,20 @@
 //                     return this.BadRequest("No files provided");
 //                 }
 
-//                 _logger.LogInformation("Uploading {Count} images to folder: {Folder}", files.Count, folder);
+//                 _logger.LogInformation("Uploading {Count} images to folder: {Folder} with max concurrency: {MaxConcurrency}",
+//                     files.Count, folder, maxConcurrency);
 
-//                 var results = new List<object>();
-//                 var errors = new List<string>();
+//                 // Use the new parallel upload method
+//                 var results = await _cloudinaryService.UploadMultipleImagesAsync(files, folder, maxConcurrency);
 
-//                 foreach (var file in files)
-//                 {
-//                     try
-//                     {
-//                         var result = await _cloudinaryService.UploadImageAsync(file, folder);
-//                         results.Add(new
-//                         {
-//                             fileName = file.FileName,
-//                             success = true,
-//                             publicId = result.PublicId,
-//                             url = result.SecureUrl,
-//                             width = result.Width,
-//                             height = result.Height
-//                         });
-//                     }
-//                     catch (Exception ex)
-//                     {
-//                         _logger.LogWarning("Failed to upload {FileName}: {Message}", file.FileName, ex.Message);
-//                         errors.Add($"{file.FileName}: {ex.Message}");
-//                         results.Add(new
-//                         {
-//                             fileName = file.FileName,
-//                             success = false,
-//                             error = ex.Message
-//                         });
-//                     }
-//                 }
+//                 var successCount = results.Count(r => r.IsSuccess);
+//                 var failureCount = results.Count(r => !r.IsSuccess);
 
 //                 _logger.LogInformation("Uploaded {SuccessCount}/{TotalCount} images successfully",
-//                     results.Count(r => ((dynamic)r).success), files.Count);
+//                     successCount, files.Count);
 
-//                 return this.Success(new { results, errors },
-//                     $"Uploaded {results.Count(r => ((dynamic)r).success)}/{files.Count} images successfully");
+//                 return this.Success(results,
+//                     $"Uploaded {successCount}/{files.Count} images successfully");
 //             }
 //             catch (Exception ex)
 //             {

@@ -221,5 +221,110 @@ namespace TravelTechApi.Services.Cloudinary
                 throw;
             }
         }
+
+        /// <inheritdoc/>
+        public async Task<List<CloudinaryBulkUploadResult>> UploadMultipleImagesAsync(
+            IEnumerable<IFormFile> files,
+            string folder = "general",
+            int maxConcurrency = 10)
+        {
+            if (files == null || !files.Any())
+            {
+                throw new ArgumentException("Files collection cannot be null or empty", nameof(files));
+            }
+
+            if (maxConcurrency < 1)
+            {
+                throw new ArgumentException("Max concurrency must be at least 1", nameof(maxConcurrency));
+            }
+
+            var filesList = files.ToList();
+            _logger.LogInformation("Starting bulk upload of {Count} files with max concurrency of {MaxConcurrency}",
+                filesList.Count, maxConcurrency);
+
+            // Use SemaphoreSlim to limit concurrent uploads
+            using var semaphore = new SemaphoreSlim(maxConcurrency, maxConcurrency);
+            var uploadTasks = new List<Task<CloudinaryBulkUploadResult>>();
+
+            foreach (var file in filesList)
+            {
+                uploadTasks.Add(UploadSingleFileAsync(file, folder, semaphore));
+            }
+
+            var results = await Task.WhenAll(uploadTasks);
+
+            var successCount = results.Count(r => r.IsSuccess);
+            var failureCount = results.Count(r => !r.IsSuccess);
+
+            _logger.LogInformation(
+                "Bulk upload completed. Success: {SuccessCount}, Failed: {FailureCount}, Total: {Total}",
+                successCount, failureCount, results.Length);
+
+            return results.ToList();
+        }
+
+        /// <summary>
+        /// Upload a single file with semaphore control for concurrency
+        /// </summary>
+        private async Task<CloudinaryBulkUploadResult> UploadSingleFileAsync(
+            IFormFile file,
+            string folder,
+            SemaphoreSlim semaphore)
+        {
+            var result = new CloudinaryBulkUploadResult
+            {
+                FileName = file.FileName
+            };
+
+            await semaphore.WaitAsync();
+            try
+            {
+                // Validate file before upload
+                if (file.Length == 0)
+                {
+                    result.IsSuccess = false;
+                    result.ErrorMessage = "File is empty";
+                    _logger.LogWarning("Skipping empty file: {FileName}", file.FileName);
+                    return result;
+                }
+
+                if (file.Length > MaxFileSize)
+                {
+                    result.IsSuccess = false;
+                    result.ErrorMessage = $"File size exceeds maximum allowed size of {MaxFileSize / 1024 / 1024}MB";
+                    _logger.LogWarning("Skipping file {FileName}: {Error}", file.FileName, result.ErrorMessage);
+                    return result;
+                }
+
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                if (!AllowedExtensions.Contains(extension))
+                {
+                    result.IsSuccess = false;
+                    result.ErrorMessage = $"File type '{extension}' is not allowed";
+                    _logger.LogWarning("Skipping file {FileName}: {Error}", file.FileName, result.ErrorMessage);
+                    return result;
+                }
+
+                // Upload the file
+                var uploadResult = await UploadImageAsync(file, folder);
+                result.IsSuccess = true;
+                result.Result = uploadResult;
+
+                _logger.LogDebug("Successfully uploaded file: {FileName} -> {PublicId}",
+                    file.FileName, uploadResult.PublicId);
+            }
+            catch (Exception ex)
+            {
+                result.IsSuccess = false;
+                result.ErrorMessage = ex.Message;
+                _logger.LogError(ex, "Failed to upload file: {FileName}", file.FileName);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+
+            return result;
+        }
     }
 }
