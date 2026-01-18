@@ -2,9 +2,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TravelTechApi.Common.Extensions;
-using TravelTechApi.DTOs;
+using TravelTechApi.DTOs.Auth;
 using Microsoft.Extensions.Logging;
-using TravelTechApi.Services;
+using TravelTechApi.Services.Interfaces;
+using TravelTechApi.DTOs.User;
 
 namespace TravelTechApi.Controllers
 {

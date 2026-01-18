@@ -1,4 +1,4 @@
-namespace TravelTechApi.DTOs
+namespace TravelTechApi.DTOs.User
 {
     /// <summary>
     /// DTO for user information

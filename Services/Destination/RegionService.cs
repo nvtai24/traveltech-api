@@ -1,7 +1,8 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using TravelTechApi.Data;
-using TravelTechApi.DTOs;
+using TravelTechApi.DTOs.Destination;
+using TravelTechApi.Services.Interfaces;
 
 namespace TravelTechApi.Services.Destination
 {

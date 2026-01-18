@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TravelTechApi.DTOs
+namespace TravelTechApi.DTOs.Auth
 {
     /// <summary>
     /// DTO for user registration

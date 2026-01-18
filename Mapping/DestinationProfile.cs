@@ -1,5 +1,5 @@
 using AutoMapper;
-using TravelTechApi.DTOs;
+using TravelTechApi.DTOs.Destination;
 using TravelTechApi.Entities;
 
 namespace TravelTechApi.Mapping
@@ -33,7 +33,16 @@ namespace TravelTechApi.Mapping
             CreateMap<DestinationSharing, DestinationSharingDto>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName))
                 .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Images.Select(i => i.Url).ToList()));
-            ;
+
+            // Create mappings
+            CreateMap<CreateDestinationDto, Destination>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Location, opt => opt.Ignore())
+                .ForMember(dest => dest.Images, opt => opt.Ignore())
+                .ForMember(dest => dest.FAQs, opt => opt.Ignore())
+                .ForMember(dest => dest.Sharings, opt => opt.Ignore());
+
+            CreateMap<CreateFaqDto, FAQ>();
 
         }
     }

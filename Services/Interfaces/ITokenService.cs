@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using TravelTechApi.Entities;
 
-namespace TravelTechApi.Services
+namespace TravelTechApi.Services.Interfaces
 {
     /// <summary>
     /// Service for generating and validating JWT tokens

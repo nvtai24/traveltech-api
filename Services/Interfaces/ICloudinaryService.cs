@@ -1,6 +1,6 @@
-using TravelTechApi.Services.Cloudinary;
+using TravelTechApi.DTOs.Cloudinary;
 
-namespace TravelTechApi.Services
+namespace TravelTechApi.Services.Interfaces
 {
     /// <summary>
     /// Service for managing Cloudinary image uploads and operations

@@ -1,4 +1,4 @@
-namespace TravelTechApi.Services.Cloudinary
+namespace TravelTechApi.DTOs.Cloudinary
 {
     /// <summary>
     /// Result of a single file upload in a bulk upload operation

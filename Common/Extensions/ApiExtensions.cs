@@ -1,8 +1,8 @@
 using Microsoft.OpenApi.Models;
-using TravelTechApi.Common.Middleware;
+using TravelTechApi.Common.Middlewares;
 using TravelTechApi.Common.Settings;
 
-namespace TravelTechApi.Extensions
+namespace TravelTechApi.Common.Extensions
 {
     /// <summary>
     /// Extension methods for API configuration

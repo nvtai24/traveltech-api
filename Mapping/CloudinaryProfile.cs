@@ -1,6 +1,6 @@
 using AutoMapper;
+using TravelTechApi.DTOs.Cloudinary;
 using TravelTechApi.Entities;
-using TravelTechApi.Services.Cloudinary;
 
 namespace TravelTechApi.Mapping
 {

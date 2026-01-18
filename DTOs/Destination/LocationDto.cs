@@ -1,4 +1,4 @@
-namespace TravelTechApi.DTOs
+namespace TravelTechApi.DTOs.Destination
 {
     /// <summary>
     /// DTO for Location entity

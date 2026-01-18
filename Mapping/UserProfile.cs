@@ -1,5 +1,6 @@
 using AutoMapper;
-using TravelTechApi.DTOs;
+using TravelTechApi.DTOs.Auth;
+using TravelTechApi.DTOs.User;
 using TravelTechApi.Entities;
 
 namespace TravelTechApi.Mapping

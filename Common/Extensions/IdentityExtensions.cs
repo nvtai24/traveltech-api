@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using TravelTechApi.Data;
 using TravelTechApi.Entities;
 
-namespace TravelTechApi.Extensions
+namespace TravelTechApi.Common.Extensions
 {
     /// <summary>
     /// Extension methods for Identity configuration

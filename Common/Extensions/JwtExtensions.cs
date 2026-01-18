@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TravelTechApi.Common.Settings;
 
-namespace TravelTechApi.Extensions
+namespace TravelTechApi.Common.Extensions
 {
     /// <summary>
     /// Extension methods for JWT authentication configuration

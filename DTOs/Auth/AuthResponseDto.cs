@@ -1,4 +1,6 @@
-namespace TravelTechApi.DTOs
+using TravelTechApi.DTOs.User;
+
+namespace TravelTechApi.DTOs.Auth
 {
     /// <summary>
     /// DTO for authentication response

@@ -3,7 +3,7 @@ using System.Net;
 using System.Text.Json;
 using TravelTechApi.Common.Exceptions;
 
-namespace TravelTechApi.Common.Middleware
+namespace TravelTechApi.Common.Middlewares
 {
     /// <summary>
     /// Global exception handler middleware to catch and format all exceptions

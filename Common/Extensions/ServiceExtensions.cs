@@ -1,7 +1,11 @@
 using TravelTechApi.Common.Settings;
-using TravelTechApi.Services;
+using TravelTechApi.Services.Auth;
+using TravelTechApi.Services.Cloudinary;
+using TravelTechApi.Services.Destination;
+using TravelTechApi.Services.Email;
+using TravelTechApi.Services.Interfaces;
 
-namespace TravelTechApi.Extensions
+namespace TravelTechApi.Common.Extensions
 {
     /// <summary>
     /// Extension methods for application services registration
@@ -16,14 +20,14 @@ namespace TravelTechApi.Extensions
             // Register AutoMapper
             services.AddAutoMapper(typeof(Program).Assembly);
 
-            // Register scoped services
+            // Register application services
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailService, SmtpEmailService>();
-            services.AddScoped<ICloudinaryService, Services.Cloudinary.CloudinaryService>();
-            services.AddScoped<IRegionService, Services.Destination.RegionService>();
-            services.AddScoped<ILocationService, Services.Destination.LocationService>();
-            services.AddScoped<IDestinationService, Services.Destination.DestinationService>();
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
+            services.AddScoped<IRegionService, RegionService>();
+            services.AddScoped<ILocationService, LocationService>();
+            services.AddScoped<IDestinationService, DestinationService>();
 
             return services;
         }

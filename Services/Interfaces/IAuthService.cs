@@ -1,6 +1,7 @@
-using TravelTechApi.DTOs;
+using TravelTechApi.DTOs.Auth;
+using TravelTechApi.DTOs.User;
 
-namespace TravelTechApi.Services
+namespace TravelTechApi.Services.Interfaces
 {
     /// <summary>
     /// Service for authentication operations

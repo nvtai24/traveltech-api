@@ -5,15 +5,17 @@ using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using TravelTechApi.Common;
+using TravelTechApi.Common.Constants;
 using TravelTechApi.Common.Exceptions;
 using TravelTechApi.Common.Settings;
 using TravelTechApi.Data;
-using TravelTechApi.DTOs;
+using TravelTechApi.DTOs.Auth;
+using TravelTechApi.DTOs.User;
 using TravelTechApi.Entities;
 using Microsoft.Extensions.Logging;
-using TravelTechApi.Common.Constants;
+using TravelTechApi.Services.Interfaces;
 
-namespace TravelTechApi.Services
+namespace TravelTechApi.Services.Auth
 {
     public class AuthService : IAuthService
     {
@@ -94,8 +96,6 @@ namespace TravelTechApi.Services
                 _logger.LogError(ex, "Failed to send confirmation email to: {Email}", user.Email);
                 // Don't fail registration if email fails, user can resend later
             }
-
-
 
             // Generate tokens (user can still get tokens but login will check email confirmation)
             return await GenerateAuthResponse(user);

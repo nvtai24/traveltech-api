@@ -1,7 +1,12 @@
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using TravelTechApi.Common.Constants;
 using TravelTechApi.Common.Extensions;
 using TravelTechApi.DTOs.Common;
-using TravelTechApi.Services;
+using TravelTechApi.DTOs.Destination;
+using TravelTechApi.Services.Interfaces;
 
 namespace TravelTechApi.Controllers
 {
@@ -48,7 +53,7 @@ namespace TravelTechApi.Controllers
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize);
 
-            var pagedResult = PagedResult<DTOs.DestinationDto>.Create(
+            var pagedResult = PagedResult<DestinationDto>.Create(
                 pagedDestinations,
                 totalCount,
                 page,
@@ -94,6 +99,110 @@ namespace TravelTechApi.Controllers
 
             var sharings = await _destinationService.GetDestinationsSharingsAsync(id);
             return this.Success(sharings, "Destination sharings retrieved successfully");
+        }
+
+        /// <summary>
+        /// Create a new destination sharing (user contribution)
+        /// </summary>
+        [HttpPost("{id}/sharings")]
+        [Authorize(Roles = AppRoles.User)] // Require authentication
+        public async Task<IActionResult> CreateDestinationSharing(int id, [FromForm] CreateDestinationSharingDto dto)
+        {
+            try
+            {
+                // Get user ID from JWT token
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    _logger.LogWarning("User ID not found in token");
+                    return this.Unauthorized("User not authenticated");
+                }
+
+                _logger.LogInformation("POST /api/destinations/{DestinationId}/sharings called by user {UserId}", id, userId);
+
+                // Validate comment
+                if (string.IsNullOrWhiteSpace(dto.Comment))
+                {
+                    return this.BadRequest("Comment is required");
+                }
+
+                var sharing = await _destinationService.CreateDestinationSharingAsync(id, userId, dto);
+
+                _logger.LogInformation("Destination sharing created successfully for destination {DestinationId}", id);
+
+                return this.Success(sharing, "Destination sharing created successfully");
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning("Validation failed: {Message}", ex.Message);
+                return this.BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating destination sharing for destination {DestinationId}", id);
+                return this.InternalServerError("Failed to create destination sharing");
+            }
+        }
+
+        /// <summary>
+        /// Create a new destination (Admin only)
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = AppRoles.Admin)]
+        public async Task<IActionResult> CreateDestination([FromForm] CreateDestinationDto dto)
+        {
+            try
+            {
+                _logger.LogInformation("POST /api/destinations called - Creating new destination: {Name}", dto.Name);
+
+                // Validate required fields
+                if (string.IsNullOrWhiteSpace(dto.Name))
+                {
+                    return this.BadRequest("Destination name is required");
+                }
+
+                if (string.IsNullOrWhiteSpace(dto.Title))
+                {
+                    return this.BadRequest("Destination title is required");
+                }
+
+                if (string.IsNullOrWhiteSpace(dto.Description))
+                {
+                    return this.BadRequest("Destination description is required");
+                }
+
+                if (dto.LocationId <= 0)
+                {
+                    return this.BadRequest("Valid location ID is required");
+                }
+
+                // Validate coordinates
+                if (dto.Lat < -90 || dto.Lat > 90)
+                {
+                    return this.BadRequest("Latitude must be between -90 and 90");
+                }
+
+                if (dto.Lon < -180 || dto.Lon > 180)
+                {
+                    return this.BadRequest("Longitude must be between -180 and 180");
+                }
+
+                var destination = await _destinationService.CreateDestinationAsync(dto);
+
+                _logger.LogInformation("Destination created successfully with id {DestinationId}", destination.Id);
+
+                return this.Success(destination, "Destination created successfully");
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning("Validation failed: {Message}", ex.Message);
+                return this.BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating destination");
+                return this.InternalServerError("Failed to create destination");
+            }
         }
     }
 }

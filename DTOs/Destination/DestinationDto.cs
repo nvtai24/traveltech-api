@@ -1,4 +1,4 @@
-namespace TravelTechApi.DTOs
+namespace TravelTechApi.DTOs.Destination
 {
     /// <summary>
     /// DTO for Destination entity
@@ -41,5 +41,32 @@ namespace TravelTechApi.DTOs
         public string Comment { get; set; } = string.Empty;
         public List<string> ImageUrls { get; set; } = new List<string>();
         public DateTime CreatedAt { get; set; }
+    }
+
+    public class CreateDestinationSharingDto
+    {
+        public string Comment { get; set; } = string.Empty;
+        public List<IFormFile>? Images { get; set; }
+    }
+
+    public class CreateDestinationDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string History { get; set; } = string.Empty;
+        public decimal Lat { get; set; }
+        public decimal Lon { get; set; }
+        public string? VideoUrl { get; set; }
+        public List<string> Tags { get; set; } = new List<string>();
+        public int LocationId { get; set; }
+        public List<IFormFile>? Images { get; set; }
+        public List<CreateFaqDto>? FAQs { get; set; }
+    }
+
+    public class CreateFaqDto
+    {
+        public string Question { get; set; } = string.Empty;
+        public string Answer { get; set; } = string.Empty;
     }
 }

@@ -1,4 +1,4 @@
-using TravelTechApi.Extensions;
+using TravelTechApi.Common.Extensions;
 
 namespace TravelTechApi
 {
