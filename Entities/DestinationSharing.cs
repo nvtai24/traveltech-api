@@ -13,5 +13,8 @@ namespace TravelTechApi.Entities
         public virtual Destination Destination { get; set; } = null!;
         public virtual ICollection<CloudinaryFileInfo> Images { get; set; } = new List<CloudinaryFileInfo>();
 
+        public string UserId { get; set; } = string.Empty;
+        public virtual ApplicationUser User { get; set; } = null!;
+
     }
 }

@@ -31,5 +31,7 @@ namespace TravelTechApi.Entities
         /// Navigation property for refresh tokens
         /// </summary>
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+
+        public virtual ICollection<DestinationSharing> DestinationSharings { get; set; } = new List<DestinationSharing>();
     }
 }

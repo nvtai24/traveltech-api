@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TravelTechApi.Data;
 using TravelTechApi.DTOs;
 
-namespace TravelTechApi.Services.Travel
+namespace TravelTechApi.Services.Destination
 {
     /// <summary>
     /// Service implementation for Region operations
@@ -31,13 +31,5 @@ namespace TravelTechApi.Services.Travel
             return _mapper.Map<IEnumerable<RegionDto>>(regions);
         }
 
-        public async Task<RegionDto?> GetRegionByIdAsync(int id)
-        {
-            _logger.LogInformation("Getting region by id: {RegionId}", id);
-            var region = await _context.Regions
-                .FirstOrDefaultAsync(r => r.Id == id);
-
-            return region == null ? null : _mapper.Map<RegionDto>(region);
-        }
     }
 }

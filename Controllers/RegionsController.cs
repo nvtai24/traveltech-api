@@ -30,23 +30,5 @@ namespace TravelTechApi.Controllers
             var regions = await _regionService.GetAllRegionsAsync();
             return this.Success(regions, "Regions retrieved successfully");
         }
-
-        /// <summary>
-        /// Get region by id
-        /// </summary>
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetRegionById(int id)
-        {
-            _logger.LogInformation("GET /api/regions/{RegionId} called", id);
-            var region = await _regionService.GetRegionByIdAsync(id);
-
-            if (region == null)
-            {
-                _logger.LogWarning("Region not found: {RegionId}", id);
-                return this.NotFound($"Region with id {id} not found");
-            }
-
-            return this.Success(region, "Region retrieved successfully");
-        }
     }
 }

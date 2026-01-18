@@ -39,5 +39,17 @@ namespace TravelTechApi.Services
         /// <param name="height">Optional height for transformation</param>
         /// <returns>The transformed image URL</returns>
         Task<string> GetImageUrlAsync(string publicId, int? width = null, int? height = null);
+
+        /// <summary>
+        /// Upload multiple images in parallel for better performance
+        /// </summary>
+        /// <param name="files">Collection of files to upload</param>
+        /// <param name="folder">Optional folder path in Cloudinary (default: "general")</param>
+        /// <param name="maxConcurrency">Maximum number of concurrent uploads (default: 10, recommended by Cloudinary)</param>
+        /// <returns>List of upload results with success status for each file</returns>
+        Task<List<CloudinaryBulkUploadResult>> UploadMultipleImagesAsync(
+            IEnumerable<IFormFile> files,
+            string folder = "general",
+            int maxConcurrency = 10);
     }
 }

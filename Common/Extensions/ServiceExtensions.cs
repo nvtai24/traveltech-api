@@ -21,9 +21,9 @@ namespace TravelTechApi.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailService, SmtpEmailService>();
             services.AddScoped<ICloudinaryService, Services.Cloudinary.CloudinaryService>();
-            services.AddScoped<IRegionService, Services.Travel.RegionService>();
-            services.AddScoped<ILocationService, Services.Travel.LocationService>();
-            services.AddScoped<IDestinationService, Services.Travel.DestinationService>();
+            services.AddScoped<IRegionService, Services.Destination.RegionService>();
+            services.AddScoped<ILocationService, Services.Destination.LocationService>();
+            services.AddScoped<IDestinationService, Services.Destination.DestinationService>();
 
             return services;
         }

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TravelTechApi.Data;
 using TravelTechApi.DTOs;
 
-namespace TravelTechApi.Services.Travel
+namespace TravelTechApi.Services.Destination
 {
     /// <summary>
     /// Service implementation for Location operations

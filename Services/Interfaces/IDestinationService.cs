@@ -7,8 +7,9 @@ namespace TravelTechApi.Services
     /// </summary>
     public interface IDestinationService
     {
-        Task<IEnumerable<DestinationDto>> GetAllDestinationsAsync();
-        Task<IEnumerable<DestinationDto>> GetDestinationsByLocationIdAsync(int locationId);
-        Task<DestinationDto?> GetDestinationByIdAsync(int id);
+        Task<IEnumerable<DestinationDto>> GetAllDestinationsAsync(int? regionId, int? locationId, string? keyword);
+        Task<DestinationDetailsDto?> GetDestinationByIdAsync(int id);
+        Task<IEnumerable<DestinationSharingDto>> GetDestinationsSharingsAsync(int destinationId);
+
     }
 }

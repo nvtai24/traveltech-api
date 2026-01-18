@@ -8,6 +8,5 @@ namespace TravelTechApi.Services
     public interface IRegionService
     {
         Task<IEnumerable<RegionDto>> GetAllRegionsAsync();
-        Task<RegionDto?> GetRegionByIdAsync(int id);
     }
 }
