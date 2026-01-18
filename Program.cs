@@ -34,8 +34,9 @@ namespace TravelTechApi
             app.UseAuthorization();
             app.MapControllers();
 
-            // Seed database with initial data
-            await app.SeedDatabaseAsync();
+            // Seed roles and database with initial data
+            await app.SeedRolesAsync();
+            await app.SeedDestinationDataAsync();
 
             app.Run();
         }

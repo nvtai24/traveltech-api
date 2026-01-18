@@ -11,6 +11,7 @@ using TravelTechApi.Data;
 using TravelTechApi.DTOs;
 using TravelTechApi.Entities;
 using Microsoft.Extensions.Logging;
+using TravelTechApi.Common.Constants;
 
 namespace TravelTechApi.Services
 {
@@ -76,6 +77,9 @@ namespace TravelTechApi.Services
 
             _logger.LogInformation("User created successfully: {UserId}, Email: {Email}", user.Id, user.Email);
 
+            // Add default role to user
+            await _userManager.AddToRoleAsync(user, AppRoles.User);
+
             // Generate email confirmation token
             var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
@@ -90,6 +94,8 @@ namespace TravelTechApi.Services
                 _logger.LogError(ex, "Failed to send confirmation email to: {Email}", user.Email);
                 // Don't fail registration if email fails, user can resend later
             }
+
+
 
             // Generate tokens (user can still get tokens but login will check email confirmation)
             return await GenerateAuthResponse(user);
