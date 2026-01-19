@@ -7,8 +7,8 @@ namespace TravelTechApi.Services.Interfaces
     /// </summary>
     public interface ILocationService
     {
-        Task<IEnumerable<LocationDto>> GetAllLocationsAsync();
-        Task<IEnumerable<LocationDto>> GetLocationsByRegionIdAsync(int regionId);
-        Task<LocationDto?> GetLocationByIdAsync(int id);
+        Task<IEnumerable<LocationResponse>> GetAllLocationsAsync();
+        Task<IEnumerable<LocationResponse>> GetLocationsByRegionIdAsync(int regionId);
+        Task<LocationResponse?> GetLocationByIdAsync(int id);
     }
 }

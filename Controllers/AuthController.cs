@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TravelTechApi.Common.Extensions;
 using TravelTechApi.DTOs.Auth;
-using Microsoft.Extensions.Logging;
 using TravelTechApi.Services.Interfaces;
-using TravelTechApi.DTOs.User;
 
 namespace TravelTechApi.Controllers
 {
@@ -29,19 +27,19 @@ namespace TravelTechApi.Controllers
         /// Register a new user
         /// </summary>
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest registerDto)
         {
             _logger.LogInformation("POST /api/auth/register called for email: {Email}", registerDto.Email);
             var result = await _authService.RegisterAsync(registerDto);
             _logger.LogInformation("User registered successfully: {Email}", registerDto.Email);
-            return this.Created(result, "User registered successfully");
+            return this.Created(result, result.Message);
         }
 
         /// <summary>
         /// Login with email and password
         /// </summary>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginDto)
         {
             _logger.LogInformation("POST /api/auth/login called for email: {Email}", loginDto.Email);
             var result = await _authService.LoginAsync(loginDto);
@@ -53,10 +51,10 @@ namespace TravelTechApi.Controllers
         /// Refresh access token using refresh token
         /// </summary>
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest refreshTokenRequest)
         {
             _logger.LogInformation("POST /api/auth/refresh-token called");
-            var result = await _authService.RefreshTokenAsync(refreshTokenDto);
+            var result = await _authService.RefreshTokenAsync(refreshTokenRequest);
             _logger.LogInformation("Token refreshed successfully");
             return this.Success(result, "Token refreshed successfully");
         }
@@ -85,7 +83,7 @@ namespace TravelTechApi.Controllers
         /// Confirm user email with token
         /// </summary>
         [HttpPost("confirm-email")]
-        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDto confirmEmailDto)
+        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest confirmEmailDto)
         {
             _logger.LogInformation("POST /api/auth/confirm-email called for userId: {UserId}", confirmEmailDto.UserId);
             var result = await _authService.ConfirmEmailAsync(confirmEmailDto.UserId, confirmEmailDto.Token);
@@ -97,7 +95,7 @@ namespace TravelTechApi.Controllers
         /// Resend email confirmation
         /// </summary>
         [HttpPost("resend-confirmation")]
-        public async Task<IActionResult> ResendConfirmation([FromBody] ResendConfirmationDto resendDto)
+        public async Task<IActionResult> ResendConfirmation([FromBody] ResendConfirmationRequest resendDto)
         {
             _logger.LogInformation("POST /api/auth/resend-confirmation called for email: {Email}", resendDto.Email);
             await _authService.ResendConfirmationEmailAsync(resendDto.Email);
@@ -121,7 +119,7 @@ namespace TravelTechApi.Controllers
             // var gender = User.FindFirstValue("Gender");
             // var dob = User.FindFirstValue("Dob");
 
-            var userDto = new UserDto
+            var userDto = new UserResponse
             {
                 Id = userId ?? string.Empty,
                 Email = email ?? string.Empty,

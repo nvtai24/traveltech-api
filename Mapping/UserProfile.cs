@@ -1,6 +1,5 @@
 using AutoMapper;
 using TravelTechApi.DTOs.Auth;
-using TravelTechApi.DTOs.User;
 using TravelTechApi.Entities;
 
 namespace TravelTechApi.Mapping
@@ -12,9 +11,9 @@ namespace TravelTechApi.Mapping
     {
         public UserProfile()
         {
-            CreateMap<ApplicationUser, UserDto>();
+            CreateMap<ApplicationUser, UserResponse>();
 
-            CreateMap<RegisterDto, ApplicationUser>()
+            CreateMap<RegisterRequest, ApplicationUser>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
         }

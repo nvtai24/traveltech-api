@@ -5,7 +5,7 @@ namespace TravelTechApi.DTOs.Auth
     /// <summary>
     /// DTO for email confirmation request
     /// </summary>
-    public class ConfirmEmailDto
+    public class ConfirmEmailRequest
     {
         /// <summary>
         /// User ID
@@ -18,5 +18,18 @@ namespace TravelTechApi.DTOs.Auth
         /// </summary>
         [Required]
         public string Token { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// DTO for resending email confirmation
+    /// </summary>
+    public class ResendConfirmationRequest
+    {
+        /// <summary>
+        /// User email address
+        /// </summary>
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
     }
 }

@@ -53,7 +53,7 @@ namespace TravelTechApi.Controllers
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize);
 
-            var pagedResult = PagedResult<DestinationDto>.Create(
+            var pagedResult = PagedResult<DestinationResponse>.Create(
                 pagedDestinations,
                 totalCount,
                 page,
@@ -106,7 +106,7 @@ namespace TravelTechApi.Controllers
         /// </summary>
         [HttpPost("{id}/sharings")]
         [Authorize(Roles = AppRoles.User)] // Require authentication
-        public async Task<IActionResult> CreateDestinationSharing(int id, [FromForm] CreateDestinationSharingDto dto)
+        public async Task<IActionResult> CreateDestinationSharing(int id, [FromForm] CreateDestinationSharingRequest dto)
         {
             try
             {
@@ -149,7 +149,7 @@ namespace TravelTechApi.Controllers
         /// </summary>
         [HttpPost]
         [Authorize(Roles = AppRoles.Admin)]
-        public async Task<IActionResult> CreateDestination([FromForm] CreateDestinationDto dto)
+        public async Task<IActionResult> CreateDestination([FromForm] CreateDestinationRequest dto)
         {
             try
             {

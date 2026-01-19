@@ -3,7 +3,7 @@ namespace TravelTechApi.DTOs.Destination
     /// <summary>
     /// DTO for Location entity
     /// </summary>
-    public class LocationDto
+    public class LocationResponse
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;

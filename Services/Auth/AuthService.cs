@@ -10,9 +10,7 @@ using TravelTechApi.Common.Exceptions;
 using TravelTechApi.Common.Settings;
 using TravelTechApi.Data;
 using TravelTechApi.DTOs.Auth;
-using TravelTechApi.DTOs.User;
 using TravelTechApi.Entities;
-using Microsoft.Extensions.Logging;
 using TravelTechApi.Services.Interfaces;
 
 namespace TravelTechApi.Services.Auth
@@ -45,7 +43,7 @@ namespace TravelTechApi.Services.Auth
             _emailService = emailService;
         }
 
-        public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
+        public async Task<RegisterResponse> RegisterAsync(RegisterRequest registerDto)
         {
             _logger.LogInformation("Starting user registration for email: {Email}", registerDto.Email);
 
@@ -97,11 +95,15 @@ namespace TravelTechApi.Services.Auth
                 // Don't fail registration if email fails, user can resend later
             }
 
-            // Generate tokens (user can still get tokens but login will check email confirmation)
-            return await GenerateAuthResponse(user);
+            // Return user info without tokens - user must confirm email and login to get tokens
+            return new RegisterResponse
+            {
+                User = _mapper.Map<UserResponse>(user),
+                Message = "Registration successful. Please check your email to confirm your account before logging in."
+            };
         }
 
-        public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
+        public async Task<LoginResponse> LoginAsync(LoginRequest loginDto)
         {
             _logger.LogInformation("Login attempt for email: {Email}", loginDto.Email);
 
@@ -130,82 +132,87 @@ namespace TravelTechApi.Services.Auth
             return await GenerateAuthResponse(user);
         }
 
-        public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto)
+        public async Task<RefreshTokenResponse> RefreshTokenAsync(RefreshTokenRequest refreshTokenRequest)
         {
             _logger.LogInformation("Token refresh attempt");
 
-            // Validate access token
-            var principal = _tokenService.GetPrincipalFromExpiredToken(refreshTokenDto.AccessToken);
-            if (principal == null)
-            {
-                _logger.LogWarning("Token refresh failed - invalid access token");
-                throw new UnauthorizedException("Invalid access token");
-            }
-
-            var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                _logger.LogWarning("Token refresh failed - invalid token claims");
-                throw new UnauthorizedException("Invalid token claims");
-            }
-
-            _logger.LogDebug("Validating refresh token for user: {UserId}", userId);
-
             // Find refresh token in database
             var storedRefreshToken = await _context.RefreshTokens
-                .FirstOrDefaultAsync(rt => rt.Token == refreshTokenDto.RefreshToken && rt.UserId == userId);
+                .FirstOrDefaultAsync(rt => rt.Token == refreshTokenRequest.RefreshToken);
 
             if (storedRefreshToken == null)
             {
-                _logger.LogWarning("Token refresh failed - refresh token not found for user: {UserId}", userId);
+                _logger.LogWarning("Token refresh failed - refresh token not found");
                 throw new UnauthorizedException("Invalid refresh token");
             }
 
             // Validate refresh token
             if (storedRefreshToken.IsUsed)
             {
-                _logger.LogWarning("Token refresh failed - token already used. UserId: {UserId}", userId);
+                _logger.LogWarning("Token refresh failed - token already used. UserId: {UserId}", storedRefreshToken.UserId);
                 throw new UnauthorizedException("Refresh token has already been used");
             }
 
             if (storedRefreshToken.IsRevoked)
             {
-                _logger.LogWarning("Token refresh failed - token revoked. UserId: {UserId}", userId);
+                _logger.LogWarning("Token refresh failed - token revoked. UserId: {UserId}", storedRefreshToken.UserId);
                 throw new UnauthorizedException("Refresh token has been revoked");
             }
 
             if (storedRefreshToken.ExpiresAt < DateTime.UtcNow)
             {
                 _logger.LogWarning("Token refresh failed - token expired. UserId: {UserId}, ExpiresAt: {ExpiresAt}",
-                    userId, storedRefreshToken.ExpiresAt);
+                    storedRefreshToken.UserId, storedRefreshToken.ExpiresAt);
                 throw new UnauthorizedException("Refresh token has expired");
             }
 
-            // Get JTI from access token
-            var jti = principal.FindFirstValue(JwtRegisteredClaimNames.Jti);
-            if (storedRefreshToken.JwtId != jti)
-            {
-                _logger.LogWarning("Token refresh failed - JTI mismatch. UserId: {UserId}", userId);
-                throw new UnauthorizedException("Token mismatch");
-            }
+            _logger.LogDebug("Validating refresh token for user: {UserId}", storedRefreshToken.UserId);
 
             // Mark old refresh token as used
             storedRefreshToken.IsUsed = true;
             await _context.SaveChangesAsync();
-            _logger.LogDebug("Marked refresh token as used for user: {UserId}", userId);
+            _logger.LogDebug("Marked refresh token as used for user: {UserId}", storedRefreshToken.UserId);
 
-            // Get user
-            var user = await _userManager.FindByIdAsync(userId);
+            // Get user to generate new tokens
+            var user = await _userManager.FindByIdAsync(storedRefreshToken.UserId);
             if (user == null)
             {
-                _logger.LogError("User not found during token refresh: {UserId}", userId);
+                _logger.LogError("User not found during token refresh: {UserId}", storedRefreshToken.UserId);
                 throw new NotFoundException("User not found");
             }
 
-            _logger.LogInformation("Token refreshed successfully for user: {UserId}", userId);
-
             // Generate new tokens
-            return await GenerateAuthResponse(user);
+            var newAccessToken = _tokenService.GenerateAccessToken(user);
+            var newRefreshToken = _tokenService.GenerateRefreshToken();
+
+            // Get JTI from new access token
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(newAccessToken);
+            var jti = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value ?? string.Empty;
+
+            // Save new refresh token to database
+            var refreshTokenEntity = new RefreshToken
+            {
+                UserId = user.Id,
+                Token = newRefreshToken,
+                JwtId = jti,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays)
+            };
+
+            await _context.RefreshTokens.AddAsync(refreshTokenEntity);
+            await _context.SaveChangesAsync();
+            _logger.LogDebug("Saved new refresh token to database. JTI: {Jti}, ExpiresAt: {ExpiresAt}",
+                jti, refreshTokenEntity.ExpiresAt);
+
+            _logger.LogInformation("Token refreshed successfully for user: {UserId}", storedRefreshToken.UserId);
+
+            // Return only tokens, no user info
+            return new RefreshTokenResponse
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken
+            };
         }
 
         public async Task RevokeTokenAsync(string userId)
@@ -296,7 +303,7 @@ namespace TravelTechApi.Services.Auth
             }
         }
 
-        private async Task<AuthResponseDto> GenerateAuthResponse(ApplicationUser user)
+        private async Task<LoginResponse> GenerateAuthResponse(ApplicationUser user)
         {
             _logger.LogDebug("Generating auth response for user: {UserId}", user.Id);
 
@@ -323,12 +330,12 @@ namespace TravelTechApi.Services.Auth
             _logger.LogDebug("Saved refresh token to database. JTI: {Jti}, ExpiresAt: {ExpiresAt}",
                 jti, refreshTokenEntity.ExpiresAt);
 
-            return new AuthResponseDto
+            return new LoginResponse
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes),
-                User = _mapper.Map<UserDto>(user)
+                User = _mapper.Map<UserResponse>(user)
             };
         }
     }

@@ -7,11 +7,11 @@ namespace TravelTechApi.Services.Interfaces
     /// </summary>
     public interface IDestinationService
     {
-        Task<IEnumerable<DestinationDto>> GetAllDestinationsAsync(int? regionId, int? locationId, string? keyword);
-        Task<DestinationDetailsDto?> GetDestinationByIdAsync(int id);
-        Task<IEnumerable<DestinationSharingDto>> GetDestinationsSharingsAsync(int destinationId);
-        Task<DestinationSharingDto> CreateDestinationSharingAsync(int destinationId, string userId, CreateDestinationSharingDto dto);
-        Task<DestinationDetailsDto> CreateDestinationAsync(CreateDestinationDto dto);
+        Task<IEnumerable<DestinationResponse>> GetAllDestinationsAsync(int? regionId, int? locationId, string? keyword);
+        Task<DestinationDetailsResponse?> GetDestinationByIdAsync(int id);
+        Task<IEnumerable<DestinationSharingResponse>> GetDestinationsSharingsAsync(int destinationId);
+        Task<DestinationSharingResponse> CreateDestinationSharingAsync(int destinationId, string userId, CreateDestinationSharingRequest dto);
+        Task<DestinationDetailsResponse> CreateDestinationAsync(CreateDestinationRequest dto);
 
     }
 }

@@ -5,7 +5,7 @@ namespace TravelTechApi.DTOs.Auth
     /// <summary>
     /// DTO for user login
     /// </summary>
-    public class LoginDto
+    public class LoginRequest
     {
         [Required]
         [EmailAddress]
@@ -13,5 +13,13 @@ namespace TravelTechApi.DTOs.Auth
 
         [Required]
         public string Password { get; set; } = string.Empty;
+    }
+
+    public class LoginResponse
+    {
+        public string AccessToken { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
+        public DateTime ExpiresAt { get; set; }
+        public UserResponse User { get; set; } = new();
     }
 }

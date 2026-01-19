@@ -3,7 +3,7 @@ namespace TravelTechApi.DTOs.Destination
     /// <summary>
     /// DTO for Destination entity
     /// </summary>
-    public class DestinationDto
+    public class DestinationResponse
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -13,7 +13,7 @@ namespace TravelTechApi.DTOs.Destination
         public string? ThumbnailUrl { get; set; } = string.Empty;
     }
 
-    public class DestinationDetailsDto
+    public class DestinationDetailsResponse
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -34,7 +34,7 @@ namespace TravelTechApi.DTOs.Destination
         public string Answer { get; set; } = string.Empty;
     }
 
-    public class DestinationSharingDto
+    public class DestinationSharingResponse
     {
         public Guid UserId { get; set; }
         public string AuthorName { get; set; } = string.Empty;
@@ -43,13 +43,13 @@ namespace TravelTechApi.DTOs.Destination
         public DateTime CreatedAt { get; set; }
     }
 
-    public class CreateDestinationSharingDto
+    public class CreateDestinationSharingRequest
     {
         public string Comment { get; set; } = string.Empty;
         public List<IFormFile>? Images { get; set; }
     }
 
-    public class CreateDestinationDto
+    public class CreateDestinationRequest
     {
         public string Name { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
@@ -61,12 +61,7 @@ namespace TravelTechApi.DTOs.Destination
         public List<string> Tags { get; set; } = new List<string>();
         public int LocationId { get; set; }
         public List<IFormFile>? Images { get; set; }
-        public List<CreateFaqDto>? FAQs { get; set; }
+        public List<FaqDto>? FAQs { get; set; }
     }
 
-    public class CreateFaqDto
-    {
-        public string Question { get; set; } = string.Empty;
-        public string Answer { get; set; } = string.Empty;
-    }
 }

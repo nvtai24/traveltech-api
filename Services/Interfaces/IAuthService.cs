@@ -1,5 +1,4 @@
 using TravelTechApi.DTOs.Auth;
-using TravelTechApi.DTOs.User;
 
 namespace TravelTechApi.Services.Interfaces
 {
@@ -8,9 +7,9 @@ namespace TravelTechApi.Services.Interfaces
     /// </summary>
     public interface IAuthService
     {
-        Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
-        Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
-        Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto);
+        Task<RegisterResponse> RegisterAsync(RegisterRequest registerDto);
+        Task<LoginResponse> LoginAsync(LoginRequest loginDto);
+        Task<RefreshTokenResponse> RefreshTokenAsync(RefreshTokenRequest refreshTokenRequest);
         Task RevokeTokenAsync(string userId);
         Task<bool> ConfirmEmailAsync(string userId, string token);
         Task ResendConfirmationEmailAsync(string email);

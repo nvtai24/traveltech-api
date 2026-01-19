@@ -5,7 +5,7 @@ namespace TravelTechApi.DTOs.Auth
     /// <summary>
     /// DTO for user registration
     /// </summary>
-    public class RegisterDto
+    public class RegisterRequest
     {
         [Required]
         [EmailAddress]
@@ -22,5 +22,11 @@ namespace TravelTechApi.DTOs.Auth
         public string LastName { get; set; } = string.Empty;
 
         public string? PhoneNumber { get; set; }
+    }
+
+    public class RegisterResponse
+    {
+        public UserResponse User { get; set; } = new();
+        public string Message { get; set; } = "Registration successful. Please check your email to confirm your account.";
     }
 }

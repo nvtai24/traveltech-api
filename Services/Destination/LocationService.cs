@@ -22,7 +22,7 @@ namespace TravelTechApi.Services.Destination
             _logger = logger;
         }
 
-        public async Task<IEnumerable<LocationDto>> GetAllLocationsAsync()
+        public async Task<IEnumerable<LocationResponse>> GetAllLocationsAsync()
         {
             _logger.LogInformation("Getting all locations");
             var locations = await _context.Locations
@@ -30,10 +30,10 @@ namespace TravelTechApi.Services.Destination
                 .OrderBy(l => l.Name)
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<LocationDto>>(locations);
+            return _mapper.Map<IEnumerable<LocationResponse>>(locations);
         }
 
-        public async Task<IEnumerable<LocationDto>> GetLocationsByRegionIdAsync(int regionId)
+        public async Task<IEnumerable<LocationResponse>> GetLocationsByRegionIdAsync(int regionId)
         {
             _logger.LogInformation("Getting locations by region id: {RegionId}", regionId);
             var locations = await _context.Locations
@@ -42,17 +42,17 @@ namespace TravelTechApi.Services.Destination
                 .OrderBy(l => l.Name)
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<LocationDto>>(locations);
+            return _mapper.Map<IEnumerable<LocationResponse>>(locations);
         }
 
-        public async Task<LocationDto?> GetLocationByIdAsync(int id)
+        public async Task<LocationResponse?> GetLocationByIdAsync(int id)
         {
             _logger.LogInformation("Getting location by id: {LocationId}", id);
             var location = await _context.Locations
                 .Include(l => l.Region)
                 .FirstOrDefaultAsync(l => l.Id == id);
 
-            return location == null ? null : _mapper.Map<LocationDto>(location);
+            return location == null ? null : _mapper.Map<LocationResponse>(location);
         }
     }
 }

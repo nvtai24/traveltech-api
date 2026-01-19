@@ -15,34 +15,34 @@ namespace TravelTechApi.Mapping
             CreateMap<Region, RegionDto>();
 
             // Location mappings
-            CreateMap<Location, LocationDto>()
+            CreateMap<Location, LocationResponse>()
                 .ForMember(dest => dest.RegionName, opt => opt.MapFrom(src => src.Region.Name));
 
             // Destination mappings
-            CreateMap<Destination, DestinationDto>()
+            CreateMap<Destination, DestinationResponse>()
                 .ForMember(dest => dest.LocationName, opt => opt.MapFrom(src => src.Location.Name))
                 .ForMember(dest => dest.ThumbnailUrl, opt => opt.MapFrom(src => src.Images.Select(i => i.Url).First()));
 
             CreateMap<FAQ, FaqDto>();
 
-            CreateMap<Destination, DestinationDetailsDto>()
+            CreateMap<Destination, DestinationDetailsResponse>()
                 .ForMember(dest => dest.LocationName, opt => opt.MapFrom(src => src.Location.Name))
                 .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Images.Select(i => i.Url).ToList()))
                 .ForMember(dest => dest.FAQs, opt => opt.MapFrom(src => src.FAQs));
 
-            CreateMap<DestinationSharing, DestinationSharingDto>()
+            CreateMap<DestinationSharing, DestinationSharingResponse>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName))
                 .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Images.Select(i => i.Url).ToList()));
 
             // Create mappings
-            CreateMap<CreateDestinationDto, Destination>()
+            CreateMap<CreateDestinationRequest, Destination>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Location, opt => opt.Ignore())
                 .ForMember(dest => dest.Images, opt => opt.Ignore())
                 .ForMember(dest => dest.FAQs, opt => opt.Ignore())
                 .ForMember(dest => dest.Sharings, opt => opt.Ignore());
 
-            CreateMap<CreateFaqDto, FAQ>();
+            CreateMap<FaqDto, FAQ>();
 
         }
     }

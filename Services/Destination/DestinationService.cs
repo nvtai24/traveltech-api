@@ -29,7 +29,7 @@ namespace TravelTechApi.Services.Destination
             _cloudinaryService = cloudinaryService;
         }
 
-        public async Task<IEnumerable<DestinationDto>> GetAllDestinationsAsync(int? regionId, int? locationId, string? keyword)
+        public async Task<IEnumerable<DestinationResponse>> GetAllDestinationsAsync(int? regionId, int? locationId, string? keyword)
         {
             _logger.LogInformation("Getting destinations by region id: {RegionId}, location id: {LocationId}, keyword: {Keyword}", regionId, locationId, keyword);
             var destinations = await _context.Destinations
@@ -59,10 +59,10 @@ namespace TravelTechApi.Services.Destination
                  || d.Tags.Any(tag => tag.ToLower().Contains(keyword))).ToList();
             }
 
-            return _mapper.Map<IEnumerable<DestinationDto>>(destinations);
+            return _mapper.Map<IEnumerable<DestinationResponse>>(destinations);
         }
 
-        public async Task<DestinationDetailsDto?> GetDestinationByIdAsync(int id)
+        public async Task<DestinationDetailsResponse?> GetDestinationByIdAsync(int id)
         {
             _logger.LogInformation("Getting destination by id: {DestinationId}", id);
             var destination = await _context.Destinations
@@ -71,9 +71,9 @@ namespace TravelTechApi.Services.Destination
                 .Include(d => d.FAQs)
                 .FirstOrDefaultAsync(d => d.Id == id);
 
-            return destination == null ? null : _mapper.Map<DestinationDetailsDto>(destination);
+            return destination == null ? null : _mapper.Map<DestinationDetailsResponse>(destination);
         }
-        public async Task<IEnumerable<DestinationSharingDto>> GetDestinationsSharingsAsync(int destinationId)
+        public async Task<IEnumerable<DestinationSharingResponse>> GetDestinationsSharingsAsync(int destinationId)
         {
             _logger.LogInformation("Getting destinations sharings by destination id: {DestinationId}", destinationId);
             var destinationSharings = await _context.DestinationSharings
@@ -81,10 +81,10 @@ namespace TravelTechApi.Services.Destination
                 .Where(ds => ds.DestinationId == destinationId)
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<DestinationSharingDto>>(destinationSharings);
+            return _mapper.Map<IEnumerable<DestinationSharingResponse>>(destinationSharings);
         }
 
-        public async Task<DestinationSharingDto> CreateDestinationSharingAsync(int destinationId, string userId, CreateDestinationSharingDto dto)
+        public async Task<DestinationSharingResponse> CreateDestinationSharingAsync(int destinationId, string userId, CreateDestinationSharingRequest dto)
         {
             _logger.LogInformation("Creating destination sharing for destination {DestinationId} by user {UserId}", destinationId, userId);
 
@@ -148,10 +148,10 @@ namespace TravelTechApi.Services.Destination
             // Load user info for response
             await _context.Entry(sharing).Reference(s => s.User).LoadAsync();
 
-            return _mapper.Map<DestinationSharingDto>(sharing);
+            return _mapper.Map<DestinationSharingResponse>(sharing);
         }
 
-        public async Task<DestinationDetailsDto> CreateDestinationAsync(CreateDestinationDto dto)
+        public async Task<DestinationDetailsResponse> CreateDestinationAsync(CreateDestinationRequest dto)
         {
             _logger.LogInformation("Creating new destination: {Name}", dto.Name);
 
@@ -207,7 +207,7 @@ namespace TravelTechApi.Services.Destination
             await _context.Entry(destination).Collection(d => d.Images).LoadAsync();
             await _context.Entry(destination).Collection(d => d.FAQs).LoadAsync();
 
-            return _mapper.Map<DestinationDetailsDto>(destination);
+            return _mapper.Map<DestinationDetailsResponse>(destination);
         }
 
     }
