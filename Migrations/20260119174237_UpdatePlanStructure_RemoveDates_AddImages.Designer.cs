@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TravelTechApi.Data;
@@ -12,9 +13,11 @@ using TravelTechApi.Data;
 namespace TravelTechApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260119174237_UpdatePlanStructure_RemoveDates_AddImages")]
+    partial class UpdatePlanStructure_RemoveDates_AddImages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -204,9 +207,6 @@ namespace TravelTechApi.Migrations
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text");
 
-                    b.Property<string>("MapUrl")
-                        .HasColumnType("text");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -245,9 +245,6 @@ namespace TravelTechApi.Migrations
 
                     b.Property<TimeSpan>("EndTime")
                         .HasColumnType("interval");
-
-                    b.Property<string>("MapUrl")
-                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -401,6 +398,9 @@ namespace TravelTechApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("DayNumber")
                         .HasColumnType("integer");
 
@@ -553,9 +553,6 @@ namespace TravelTechApi.Migrations
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text");
 
-                    b.Property<string>("MapUrl")
-                        .HasColumnType("text");
-
                     b.Property<string>("MealType")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -617,8 +614,8 @@ namespace TravelTechApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("AIResponseJson")
-                        .HasColumnType("jsonb");
+                    b.Property<decimal>("Budget")
+                        .HasColumnType("numeric");
 
                     b.Property<int?>("CurrentLocationId")
                         .HasColumnType("integer");
@@ -648,12 +645,6 @@ namespace TravelTechApi.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasDefaultValue("Draft");
-
-                    b.Property<decimal>("TotalCostEstimatedFrom")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalCostEstimatedTo")
-                        .HasColumnType("numeric");
 
                     b.Property<string>("UserId")
                         .IsRequired()

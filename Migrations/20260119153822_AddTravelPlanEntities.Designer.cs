@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TravelTechApi.Data;
@@ -12,9 +13,11 @@ using TravelTechApi.Data;
 namespace TravelTechApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260119153822_AddTravelPlanEntities")]
+    partial class AddTravelPlanEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -155,21 +158,6 @@ namespace TravelTechApi.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("PlanTravelHobby", b =>
-                {
-                    b.Property<int>("HobbiesId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("PlansId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("HobbiesId", "PlansId");
-
-                    b.HasIndex("PlansId");
-
-                    b.ToTable("PlanTravelHobby");
-                });
-
             modelBuilder.Entity("TravelTechApi.Entities.AccommodationRecommendation", b =>
                 {
                     b.Property<int>("Id")
@@ -199,12 +187,6 @@ namespace TravelTechApi.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MapUrl")
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
@@ -243,11 +225,11 @@ namespace TravelTechApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("DestinationId")
+                        .HasColumnType("integer");
+
                     b.Property<TimeSpan>("EndTime")
                         .HasColumnType("interval");
-
-                    b.Property<string>("MapUrl")
-                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -272,6 +254,8 @@ namespace TravelTechApi.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DailyItineraryId");
+
+                    b.HasIndex("DestinationId");
 
                     b.ToTable("Activities");
                 });
@@ -400,6 +384,9 @@ namespace TravelTechApi.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("DayNumber")
                         .HasColumnType("integer");
@@ -550,12 +537,6 @@ namespace TravelTechApi.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MapUrl")
-                        .HasColumnType("text");
-
                     b.Property<string>("MealType")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -617,14 +598,17 @@ namespace TravelTechApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("AIResponseJson")
-                        .HasColumnType("jsonb");
+                    b.Property<decimal>("Budget")
+                        .HasColumnType("numeric");
 
                     b.Property<int?>("CurrentLocationId")
                         .HasColumnType("integer");
 
                     b.Property<int>("Duration")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("GeneratedAt")
                         .HasColumnType("timestamp with time zone");
@@ -642,18 +626,15 @@ namespace TravelTechApi.Migrations
                     b.Property<int>("PriceSettingId")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasDefaultValue("Draft");
-
-                    b.Property<decimal>("TotalCostEstimatedFrom")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalCostEstimatedTo")
-                        .HasColumnType("numeric");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -690,7 +671,7 @@ namespace TravelTechApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PriceSettings");
+                    b.ToTable("PriceSetting");
                 });
 
             modelBuilder.Entity("TravelTechApi.Entities.RefreshToken", b =>
@@ -816,12 +797,16 @@ namespace TravelTechApi.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("text");
+
+                    b.Property<int?>("PlanId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.ToTable("TravelHobbies");
+                    b.HasIndex("PlanId");
+
+                    b.ToTable("TravelHobby");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -875,21 +860,6 @@ namespace TravelTechApi.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PlanTravelHobby", b =>
-                {
-                    b.HasOne("TravelTechApi.Entities.TravelHobby", null)
-                        .WithMany()
-                        .HasForeignKey("HobbiesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TravelTechApi.Entities.Plan", null)
-                        .WithMany()
-                        .HasForeignKey("PlansId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("TravelTechApi.Entities.AccommodationRecommendation", b =>
                 {
                     b.HasOne("TravelTechApi.Entities.Plan", "Plan")
@@ -909,7 +879,14 @@ namespace TravelTechApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TravelTechApi.Entities.Destination", "Destination")
+                        .WithMany()
+                        .HasForeignKey("DestinationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("DailyItinerary");
+
+                    b.Navigation("Destination");
                 });
 
             modelBuilder.Entity("TravelTechApi.Entities.CloudinaryFileInfo", b =>
@@ -1053,6 +1030,13 @@ namespace TravelTechApi.Migrations
                     b.Navigation("Plan");
                 });
 
+            modelBuilder.Entity("TravelTechApi.Entities.TravelHobby", b =>
+                {
+                    b.HasOne("TravelTechApi.Entities.Plan", null)
+                        .WithMany("Hobbies")
+                        .HasForeignKey("PlanId");
+                });
+
             modelBuilder.Entity("TravelTechApi.Entities.ApplicationUser", b =>
                 {
                     b.Navigation("DestinationSharings");
@@ -1091,6 +1075,8 @@ namespace TravelTechApi.Migrations
                     b.Navigation("AccommodationRecommendations");
 
                     b.Navigation("DailyItineraries");
+
+                    b.Navigation("Hobbies");
 
                     b.Navigation("TransportationRecommendations");
                 });

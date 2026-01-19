@@ -29,6 +29,10 @@ namespace TravelTechApi.Common.Extensions
             services.AddScoped<ILocationService, LocationService>();
             services.AddScoped<IDestinationService, DestinationService>();
 
+            // AI and Plan services
+            services.AddScoped<IAIService, TravelTechApi.Services.AI.OpenAIService>();
+            services.AddScoped<IPlanGenerationService, TravelTechApi.Services.Plan.PlanGenerationService>();
+
             return services;
         }
 
@@ -46,6 +50,9 @@ namespace TravelTechApi.Common.Extensions
 
             // Cloudinary Settings
             services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
+
+            // AI Settings
+            services.Configure<AISettings>(configuration.GetSection("AISettings"));
 
             return services;
         }

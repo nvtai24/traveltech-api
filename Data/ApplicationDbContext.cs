@@ -25,6 +25,16 @@ namespace TravelTechApi.Data
         public DbSet<DestinationSharing> DestinationSharings { get; set; }
         public DbSet<CloudinaryFileInfo> CloudinaryFileInfos { get; set; }
 
+        // Travel Plan entities
+        public DbSet<Plan> Plans { get; set; }
+        public DbSet<DailyItinerary> DailyItineraries { get; set; }
+        public DbSet<Activity> Activities { get; set; }
+        public DbSet<FoodRecommendation> FoodRecommendations { get; set; }
+        public DbSet<AccommodationRecommendation> AccommodationRecommendations { get; set; }
+        public DbSet<TransportationRecommendation> TransportationRecommendations { get; set; }
+        public DbSet<TravelHobby> TravelHobbies { get; set; }
+        public DbSet<PriceSetting> PriceSettings { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -124,6 +134,117 @@ namespace TravelTechApi.Data
                 entity.Property(e => e.Url).IsRequired();
                 entity.Property(e => e.ResourceType).IsRequired();
                 entity.Property(e => e.CreatedAt).IsRequired();
+            });
+
+            // Configure Plan
+            builder.Entity<Plan>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("Draft");
+                entity.Property(e => e.AIModel).HasMaxLength(100);
+
+                // Destination location
+                entity.HasOne(e => e.Location)
+                    .WithMany()
+                    .HasForeignKey(e => e.LocationId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Current location (optional)
+                entity.HasOne(e => e.CurrentLocation)
+                    .WithMany()
+                    .HasForeignKey(e => e.CurrentLocationId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // User
+                entity.HasOne(e => e.ApplicationUser)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // PriceSetting
+                entity.HasOne(e => e.PriceSetting)
+                    .WithMany()
+                    .HasForeignKey(e => e.PriceSettingId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure DailyItinerary
+            builder.Entity<DailyItinerary>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Summary).IsRequired();
+
+                entity.HasOne(e => e.Plan)
+                    .WithMany(p => p.DailyItineraries)
+                    .HasForeignKey(e => e.PlanId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure Activity
+            builder.Entity<Activity>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Description).IsRequired();
+
+                entity.HasOne(e => e.DailyItinerary)
+                    .WithMany(d => d.Activities)
+                    .HasForeignKey(e => e.DailyItineraryId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // TODO: Uncomment when implementing Destination linking
+                // entity.HasOne(e => e.Destination)
+                //     .WithMany()
+                //     .HasForeignKey(e => e.DestinationId)
+                //     .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Configure FoodRecommendation
+            builder.Entity<FoodRecommendation>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.MealType).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.DishName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.RestaurantName).IsRequired().HasMaxLength(200);
+
+                entity.HasOne(e => e.DailyItinerary)
+                    .WithMany(d => d.FoodRecommendations)
+                    .HasForeignKey(e => e.DailyItineraryId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure AccommodationRecommendation
+            builder.Entity<AccommodationRecommendation>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.AccommodationType).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+
+                entity.HasOne(e => e.Plan)
+                    .WithMany(p => p.AccommodationRecommendations)
+                    .HasForeignKey(e => e.PlanId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure TransportationRecommendation
+            builder.Entity<TransportationRecommendation>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.TransportationType).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Route).IsRequired().HasMaxLength(500);
+
+                entity.HasOne(e => e.Plan)
+                    .WithMany(p => p.TransportationRecommendations)
+                    .HasForeignKey(e => e.PlanId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure TravelHobby
+            builder.Entity<TravelHobby>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Description).IsRequired();
             });
         }
     }
