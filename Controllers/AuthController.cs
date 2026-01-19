@@ -27,11 +27,11 @@ namespace TravelTechApi.Controllers
         /// Register a new user
         /// </summary>
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
         {
-            _logger.LogInformation("POST /api/auth/register called for email: {Email}", registerDto.Email);
-            var result = await _authService.RegisterAsync(registerDto);
-            _logger.LogInformation("User registered successfully: {Email}", registerDto.Email);
+            _logger.LogInformation("POST /api/auth/register called for email: {Email}", registerRequest.Email);
+            var result = await _authService.RegisterAsync(registerRequest);
+            _logger.LogInformation("User registered successfully: {Email}", registerRequest.Email);
             return this.Created(result, result.Message);
         }
 
@@ -39,11 +39,11 @@ namespace TravelTechApi.Controllers
         /// Login with email and password
         /// </summary>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            _logger.LogInformation("POST /api/auth/login called for email: {Email}", loginDto.Email);
-            var result = await _authService.LoginAsync(loginDto);
-            _logger.LogInformation("Login successful for email: {Email}", loginDto.Email);
+            _logger.LogInformation("POST /api/auth/login called for email: {Email}", loginRequest.Email);
+            var result = await _authService.LoginAsync(loginRequest);
+            _logger.LogInformation("Login successful for email: {Email}", loginRequest.Email);
             return this.Success(result, "Login successful");
         }
 
@@ -83,11 +83,11 @@ namespace TravelTechApi.Controllers
         /// Confirm user email with token
         /// </summary>
         [HttpPost("confirm-email")]
-        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest confirmEmailDto)
+        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest confirmEmailRequest)
         {
-            _logger.LogInformation("POST /api/auth/confirm-email called for userId: {UserId}", confirmEmailDto.UserId);
-            var result = await _authService.ConfirmEmailAsync(confirmEmailDto.UserId, confirmEmailDto.Token);
-            _logger.LogInformation("Email confirmed successfully for userId: {UserId}", confirmEmailDto.UserId);
+            _logger.LogInformation("POST /api/auth/confirm-email called for userId: {UserId}", confirmEmailRequest.UserId);
+            var result = await _authService.ConfirmEmailAsync(confirmEmailRequest.UserId, confirmEmailRequest.Token);
+            _logger.LogInformation("Email confirmed successfully for userId: {UserId}", confirmEmailRequest.UserId);
             return this.Success(result, "Email confirmed successfully. You can now login.");
         }
 
@@ -95,11 +95,11 @@ namespace TravelTechApi.Controllers
         /// Resend email confirmation
         /// </summary>
         [HttpPost("resend-confirmation")]
-        public async Task<IActionResult> ResendConfirmation([FromBody] ResendConfirmationRequest resendDto)
+        public async Task<IActionResult> ResendConfirmation([FromBody] ResendConfirmationRequest resendConfirmationRequest)
         {
-            _logger.LogInformation("POST /api/auth/resend-confirmation called for email: {Email}", resendDto.Email);
-            await _authService.ResendConfirmationEmailAsync(resendDto.Email);
-            _logger.LogInformation("Confirmation email resent to: {Email}", resendDto.Email);
+            _logger.LogInformation("POST /api/auth/resend-confirmation called for email: {Email}", resendConfirmationRequest.Email);
+            await _authService.ResendConfirmationEmailAsync(resendConfirmationRequest.Email);
+            _logger.LogInformation("Confirmation email resent to: {Email}", resendConfirmationRequest.Email);
             return this.Success("If the email exists and is not confirmed, a confirmation email has been sent.");
         }
 

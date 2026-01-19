@@ -106,7 +106,7 @@ namespace TravelTechApi.Controllers
         /// </summary>
         [HttpPost("{id}/sharings")]
         [Authorize(Roles = AppRoles.User)] // Require authentication
-        public async Task<IActionResult> CreateDestinationSharing(int id, [FromForm] CreateDestinationSharingRequest dto)
+        public async Task<IActionResult> CreateDestinationSharing(int id, [FromForm] CreateDestinationSharingRequest createDestinationSharingRequest)
         {
             try
             {
@@ -121,12 +121,12 @@ namespace TravelTechApi.Controllers
                 _logger.LogInformation("POST /api/destinations/{DestinationId}/sharings called by user {UserId}", id, userId);
 
                 // Validate comment
-                if (string.IsNullOrWhiteSpace(dto.Comment))
+                if (string.IsNullOrWhiteSpace(createDestinationSharingRequest.Comment))
                 {
                     return this.BadRequest("Comment is required");
                 }
 
-                var sharing = await _destinationService.CreateDestinationSharingAsync(id, userId, dto);
+                var sharing = await _destinationService.CreateDestinationSharingAsync(id, userId, createDestinationSharingRequest);
 
                 _logger.LogInformation("Destination sharing created successfully for destination {DestinationId}", id);
 
@@ -149,45 +149,45 @@ namespace TravelTechApi.Controllers
         /// </summary>
         [HttpPost]
         [Authorize(Roles = AppRoles.Admin)]
-        public async Task<IActionResult> CreateDestination([FromForm] CreateDestinationRequest dto)
+        public async Task<IActionResult> CreateDestination([FromForm] CreateDestinationRequest createDestinationRequest)
         {
             try
             {
-                _logger.LogInformation("POST /api/destinations called - Creating new destination: {Name}", dto.Name);
+                _logger.LogInformation("POST /api/destinations called - Creating new destination: {Name}", createDestinationRequest.Name);
 
                 // Validate required fields
-                if (string.IsNullOrWhiteSpace(dto.Name))
+                if (string.IsNullOrWhiteSpace(createDestinationRequest.Name))
                 {
                     return this.BadRequest("Destination name is required");
                 }
 
-                if (string.IsNullOrWhiteSpace(dto.Title))
+                if (string.IsNullOrWhiteSpace(createDestinationRequest.Title))
                 {
                     return this.BadRequest("Destination title is required");
                 }
 
-                if (string.IsNullOrWhiteSpace(dto.Description))
+                if (string.IsNullOrWhiteSpace(createDestinationRequest.Description))
                 {
                     return this.BadRequest("Destination description is required");
                 }
 
-                if (dto.LocationId <= 0)
+                if (createDestinationRequest.LocationId <= 0)
                 {
                     return this.BadRequest("Valid location ID is required");
                 }
 
                 // Validate coordinates
-                if (dto.Lat < -90 || dto.Lat > 90)
+                if (createDestinationRequest.Lat < -90 || createDestinationRequest.Lat > 90)
                 {
                     return this.BadRequest("Latitude must be between -90 and 90");
                 }
 
-                if (dto.Lon < -180 || dto.Lon > 180)
+                if (createDestinationRequest.Lon < -180 || createDestinationRequest.Lon > 180)
                 {
                     return this.BadRequest("Longitude must be between -180 and 180");
                 }
 
-                var destination = await _destinationService.CreateDestinationAsync(dto);
+                var destination = await _destinationService.CreateDestinationAsync(createDestinationRequest);
 
                 _logger.LogInformation("Destination created successfully with id {DestinationId}", destination.Id);
 
