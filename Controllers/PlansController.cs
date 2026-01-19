@@ -70,6 +70,23 @@ namespace TravelTechApi.Controllers
         }
 
         /// <summary>
+        /// Save a generated plan
+        /// </summary>
+        [HttpPost("{id}/save")]
+        public async Task<IActionResult> SavePlan(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return this.Unauthorized("User not authenticated");
+
+            var result = await _planService.SavePlanAsync(id, userId);
+            if (!result)
+                return this.NotFound("Plan not found");
+
+            return this.Success("Plan saved successfully");
+        }
+
+        /// <summary>
         /// Delete a plan
         /// </summary>
         [HttpDelete("{id}")]

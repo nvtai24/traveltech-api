@@ -86,7 +86,7 @@ namespace TravelTechApi.Services.Plan
                     PriceSettingId = request.PriceSettingId,
                     Hobbies = hobbies,
                     Note = request.Notes ?? string.Empty,
-                    Status = "Generated",
+                    IsSaved = false,
                     GeneratedAt = DateTime.UtcNow,
                     AIModel = _aiService.GetModel(),
                     UserId = userId,
@@ -227,13 +227,27 @@ namespace TravelTechApi.Services.Plan
                 .Include(p => p.Location)
                 .Include(p => p.CurrentLocation)
                 .Include(p => p.PriceSetting)
-                .Where(p => p.UserId == userId)
+                .Where(p => p.UserId == userId && p.IsSaved)
                 .OrderByDescending(p => p.GeneratedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
             return _mapper.Map<List<PlanResponse>>(plans);
+        }
+
+        public async Task<bool> SavePlanAsync(int planId, string userId)
+        {
+            var plan = await _context.Plans
+                .FirstOrDefaultAsync(p => p.Id == planId && p.UserId == userId);
+
+            if (plan == null)
+                return false;
+
+            plan.IsSaved = true;
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<bool> DeletePlanAsync(int planId, string userId)

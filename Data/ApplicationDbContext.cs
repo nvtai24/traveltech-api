@@ -140,7 +140,7 @@ namespace TravelTechApi.Data
             builder.Entity<Plan>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("Draft");
+                entity.Property(e => e.IsSaved).HasDefaultValue(false);
                 entity.Property(e => e.AIModel).HasMaxLength(100);
 
                 // Destination location

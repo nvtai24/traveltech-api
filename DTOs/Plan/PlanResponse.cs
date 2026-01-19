@@ -16,7 +16,7 @@ namespace TravelTechApi.DTOs.Plan
         public string PriceSetting { get; set; } = string.Empty;
         public List<string> Hobbies { get; set; } = new();
         public string Note { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
+        public bool IsSaved { get; set; }
         public DateTime? GeneratedAt { get; set; }
         public string? AIModel { get; set; }
 

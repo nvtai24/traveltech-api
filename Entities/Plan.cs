@@ -32,7 +32,7 @@ namespace TravelTechApi.Entities
         public string Note { get; set; } = string.Empty;
 
         // Plan status and metadata
-        public string Status { get; set; } = "Draft"; // Draft, Saved
+        public bool IsSaved { get; set; } = false;
         public DateTime? GeneratedAt { get; set; }
         public string? AIModel { get; set; }
 
