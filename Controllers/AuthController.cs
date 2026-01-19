@@ -117,13 +117,17 @@ namespace TravelTechApi.Controllers
             var email = User.FindFirstValue(ClaimTypes.Email);
             var firstName = User.FindFirstValue(ClaimTypes.GivenName);
             var lastName = User.FindFirstValue(ClaimTypes.Surname);
+            var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+            // var gender = User.FindFirstValue("Gender");
+            // var dob = User.FindFirstValue("Dob");
 
             var userDto = new UserDto
             {
                 Id = userId ?? string.Empty,
                 Email = email ?? string.Empty,
                 FirstName = firstName,
-                LastName = lastName
+                LastName = lastName,
+                PhoneNumber = phoneNumber
             };
 
             _logger.LogDebug("Retrieved current user info for: {UserId}", userId);

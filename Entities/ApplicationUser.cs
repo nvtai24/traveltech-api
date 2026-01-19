@@ -17,6 +17,10 @@ namespace TravelTechApi.Entities
         /// </summary>
         public string? LastName { get; set; }
 
+        // public string? Gender { get; set; }
+
+        // public DateTime? Dob { get; set; }
+
         /// <summary>
         /// Date when user was created
         /// </summary>

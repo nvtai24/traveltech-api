@@ -31,6 +31,9 @@ namespace TravelTechApi.Services.Auth
                 new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
                 new Claim(ClaimTypes.GivenName, user.FirstName ?? string.Empty),
                 new Claim(ClaimTypes.Surname, user.LastName ?? string.Empty),
+                // new Claim("Gender", user.Gender ?? string.Empty),
+                // new Claim("Dob", user.Dob?.ToString("dd-MM-yyyy") ?? string.Empty),
+                new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? string.Empty),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email ?? string.Empty)
             };
