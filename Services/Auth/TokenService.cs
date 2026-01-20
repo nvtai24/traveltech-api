@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -20,7 +21,7 @@ namespace TravelTechApi.Services.Auth
             _logger = logger;
         }
 
-        public string GenerateAccessToken(ApplicationUser user)
+        public string GenerateAccessToken(ApplicationUser user, IList<string> roles)
         {
             _logger.LogDebug("Generating access token for user: {UserId}", user.Id);
             var claims = new List<Claim>
@@ -33,8 +34,14 @@ namespace TravelTechApi.Services.Auth
                 // new Claim("Dob", user.Dob?.ToString("dd-MM-yyyy") ?? string.Empty),
                 new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? string.Empty),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Sub, user.Email ?? string.Empty)
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email ?? string.Empty),
             };
+
+            // Add role claims
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

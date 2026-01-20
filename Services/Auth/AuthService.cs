@@ -181,8 +181,11 @@ namespace TravelTechApi.Services.Auth
                 throw new NotFoundException("User not found");
             }
 
+            // Get user roles
+            var roles = await _userManager.GetRolesAsync(user);
+
             // Generate new tokens
-            var newAccessToken = _tokenService.GenerateAccessToken(user);
+            var newAccessToken = _tokenService.GenerateAccessToken(user, roles);
             var newRefreshToken = _tokenService.GenerateRefreshToken();
 
             // Get JTI from new access token
@@ -307,7 +310,10 @@ namespace TravelTechApi.Services.Auth
         {
             _logger.LogDebug("Generating auth response for user: {UserId}", user.Id);
 
-            var accessToken = _tokenService.GenerateAccessToken(user);
+            // Get user roles
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var accessToken = _tokenService.GenerateAccessToken(user, roles);
             var refreshToken = _tokenService.GenerateRefreshToken();
 
             // Get JTI from access token
@@ -330,12 +336,15 @@ namespace TravelTechApi.Services.Auth
             _logger.LogDebug("Saved refresh token to database. JTI: {Jti}, ExpiresAt: {ExpiresAt}",
                 jti, refreshTokenEntity.ExpiresAt);
 
+            var userResponse = _mapper.Map<UserResponse>(user);
+            userResponse.Role = roles.FirstOrDefault() ?? string.Empty;
+
             return new LoginResponse
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes),
-                User = _mapper.Map<UserResponse>(user)
+                User = userResponse
             };
         }
     }
