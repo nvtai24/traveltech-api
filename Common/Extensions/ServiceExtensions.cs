@@ -5,6 +5,7 @@ using TravelTechApi.Services.Cloudinary;
 using TravelTechApi.Services.Destination;
 using TravelTechApi.Services.Email;
 using TravelTechApi.Services.Plan;
+using TravelTechApi.Services.UserPlanSubscription;
 
 namespace TravelTechApi.Common.Extensions
 {
@@ -29,10 +30,9 @@ namespace TravelTechApi.Common.Extensions
             services.AddScoped<IRegionService, RegionService>();
             services.AddScoped<ILocationService, LocationService>();
             services.AddScoped<IDestinationService, DestinationService>();
-
-            // AI and Plan services
             services.AddScoped<IAIService, OpenAIService>();
             services.AddScoped<IPlanGenerationService, PlanGenerationService>();
+            services.AddScoped<IUserPlanSubscriptionService, UserPlanSubscriptionService>();
 
             return services;
         }

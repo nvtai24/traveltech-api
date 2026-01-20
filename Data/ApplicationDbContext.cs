@@ -35,6 +35,10 @@ namespace TravelTechApi.Data
         public DbSet<TravelHobby> TravelHobbies { get; set; }
         public DbSet<PriceSetting> PriceSettings { get; set; }
 
+        // Subscription Plan entities
+        public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
+        public DbSet<UserPlanSubscription> UserPlanSubscriptions { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -245,6 +249,37 @@ namespace TravelTechApi.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Description).IsRequired();
+            });
+
+            // Configure SubscriptionPlan
+            builder.Entity<SubscriptionPlan>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Description).IsRequired();
+                entity.Property(e => e.Price).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Order).IsRequired();
+                entity.Property(e => e.DailyLimit).IsRequired();
+            });
+
+            // Configure UserPlanSubscription (Join table for many-to-many)
+            builder.Entity<UserPlanSubscription>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.StartDate).IsRequired();
+                entity.Property(e => e.EndDate).IsRequired();
+
+                // Relationship with ApplicationUser
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.Subscriptions)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Relationship with SubscriptionPlan
+                entity.HasOne(e => e.SubscriptionPlan)
+                    .WithMany(p => p.Users)
+                    .HasForeignKey(e => e.SubscriptionPlanId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

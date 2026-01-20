@@ -10,6 +10,7 @@ namespace TravelTechApi.DTOs.Auth
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
-        public string Role { get; set; } = string.Empty;
+        public List<string> Roles { get; set; } = new List<string>();
+        public string SubscriptionPlan { get; set; } = string.Empty;
     }
 }

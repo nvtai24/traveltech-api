@@ -12,6 +12,7 @@ using TravelTechApi.Data;
 using TravelTechApi.DTOs.Auth;
 using TravelTechApi.Entities;
 using TravelTechApi.Services.Email;
+using TravelTechApi.Services.UserPlanSubscription;
 
 namespace TravelTechApi.Services.Auth
 {
@@ -24,6 +25,7 @@ namespace TravelTechApi.Services.Auth
         private readonly IMapper _mapper;
         private readonly ILogger<AuthService> _logger;
         private readonly IEmailService _emailService;
+        private readonly IUserPlanSubscriptionService _userPlanSubscriptionService;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
@@ -32,7 +34,8 @@ namespace TravelTechApi.Services.Auth
             IOptions<JwtSettings> jwtSettings,
             IMapper mapper,
             ILogger<AuthService> logger,
-            IEmailService emailService)
+            IEmailService emailService,
+            IUserPlanSubscriptionService userPlanSubscriptionService)
         {
             _userManager = userManager;
             _context = context;
@@ -41,6 +44,7 @@ namespace TravelTechApi.Services.Auth
             _mapper = mapper;
             _logger = logger;
             _emailService = emailService;
+            _userPlanSubscriptionService = userPlanSubscriptionService;
         }
 
         public async Task<RegisterResponse> RegisterAsync(RegisterRequest registerDto)
@@ -79,6 +83,29 @@ namespace TravelTechApi.Services.Auth
 
             // Add default role to user
             await _userManager.AddToRoleAsync(user, AppRoles.User);
+
+            // Assign default Basic subscription plan
+            var basicPlan = await _context.SubscriptionPlans
+                .FirstOrDefaultAsync(p => p.Name == "Basic");
+
+            if (basicPlan != null)
+            {
+                var subscription = new Entities.UserPlanSubscription
+                {
+                    UserId = user.Id,
+                    SubscriptionPlanId = basicPlan.Id,
+                    StartDate = DateTime.UtcNow,
+                    EndDate = DateTime.UtcNow.AddDays(100_000) // free plan
+                };
+
+                await _context.UserPlanSubscriptions.AddAsync(subscription);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Assigned Basic subscription to new user: {UserId}", user.Id);
+            }
+            else
+            {
+                _logger.LogWarning("Basic subscription plan not found, user registered without subscription");
+            }
 
             // Generate email confirmation token
             var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -184,6 +211,7 @@ namespace TravelTechApi.Services.Auth
             // Get user roles
             var roles = await _userManager.GetRolesAsync(user);
 
+            var subscriptionPlan = await _userPlanSubscriptionService.GetCurrentPlanAsync(user.Id);
             // Generate new tokens
             var newAccessToken = _tokenService.GenerateAccessToken(user, roles);
             var newRefreshToken = _tokenService.GenerateRefreshToken();
@@ -337,7 +365,10 @@ namespace TravelTechApi.Services.Auth
                 jti, refreshTokenEntity.ExpiresAt);
 
             var userResponse = _mapper.Map<UserResponse>(user);
-            userResponse.Role = roles.FirstOrDefault() ?? string.Empty;
+            userResponse.Roles = roles.ToList();
+
+            var plan = await _userPlanSubscriptionService.GetCurrentPlanAsync(user.Id);
+            userResponse.SubscriptionPlan = plan?.Name ?? string.Empty;
 
             return new LoginResponse
             {

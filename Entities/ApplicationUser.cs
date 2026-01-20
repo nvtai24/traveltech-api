@@ -37,5 +37,10 @@ namespace TravelTechApi.Entities
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
         public virtual ICollection<DestinationSharing> DestinationSharings { get; set; } = new List<DestinationSharing>();
+
+        /// <summary>
+        /// Navigation property for plan subscriptions
+        /// </summary>
+        public virtual ICollection<UserPlanSubscription> Subscriptions { get; set; } = new List<UserPlanSubscription>();
     }
 }

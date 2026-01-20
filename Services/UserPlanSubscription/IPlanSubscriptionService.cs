@@ -1,0 +1,10 @@
+using TravelTechApi.Entities;
+
+namespace TravelTechApi.Services.UserPlanSubscription
+{
+    public interface IUserPlanSubscriptionService
+    {
+        Task<SubscriptionPlan?> GetCurrentPlanAsync(string userId);
+
+    }
+}
