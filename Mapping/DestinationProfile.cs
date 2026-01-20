@@ -21,7 +21,7 @@ namespace TravelTechApi.Mapping
             // Destination mappings
             CreateMap<Destination, DestinationResponse>()
                 .ForMember(dest => dest.LocationName, opt => opt.MapFrom(src => src.Location.Name))
-                .ForMember(dest => dest.ThumbnailUrl, opt => opt.MapFrom(src => src.Images.Select(i => i.Url).First()));
+                .ForMember(dest => dest.ThumbnailUrl, opt => opt.MapFrom(src => src.Images.Select(i => i.Url).FirstOrDefault()));
 
             CreateMap<FAQ, FaqDto>();
 

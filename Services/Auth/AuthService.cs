@@ -11,7 +11,7 @@ using TravelTechApi.Common.Settings;
 using TravelTechApi.Data;
 using TravelTechApi.DTOs.Auth;
 using TravelTechApi.Entities;
-using TravelTechApi.Services.Interfaces;
+using TravelTechApi.Services.Email;
 
 namespace TravelTechApi.Services.Auth
 {

@@ -1,6 +1,6 @@
 using TravelTechApi.DTOs.Plan;
 
-namespace TravelTechApi.Services.Interfaces
+namespace TravelTechApi.Services.Plan
 {
     public interface IPlanGenerationService
     {

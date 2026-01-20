@@ -1,4 +1,4 @@
-namespace TravelTechApi.Services.Interfaces
+namespace TravelTechApi.Services.Email
 {
     /// <summary>
     /// Service for sending emails

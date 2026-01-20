@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TravelTechApi.Common.Extensions;
 using TravelTechApi.DTOs.Destination;
-using TravelTechApi.Services.Interfaces;
+using TravelTechApi.Services.Destination;
 
 namespace TravelTechApi.Controllers
 {

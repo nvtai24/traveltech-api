@@ -4,7 +4,7 @@ using System.Security.Claims;
 using TravelTechApi.Common;
 using TravelTechApi.Common.Extensions;
 using TravelTechApi.DTOs.Plan;
-using TravelTechApi.Services.Interfaces;
+using TravelTechApi.Services.Plan;
 
 namespace TravelTechApi.Controllers
 {

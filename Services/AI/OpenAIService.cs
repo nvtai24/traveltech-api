@@ -3,7 +3,6 @@ using OpenAI.Chat;
 using System.ClientModel;
 using System.Text.Json;
 using TravelTechApi.Common.Settings;
-using TravelTechApi.Services.Interfaces;
 
 namespace TravelTechApi.Services.AI
 {
@@ -189,7 +188,6 @@ Bạn là một chuyên gia lập kế hoạch du lịch tại Việt Nam. Hãy 
 **Lưu ý quan trọng:**
 - Trả về CHÍNH XÁC theo format JSON trên, không thêm markdown hay text khác
 - Giá cả phải thực tế và phù hợp với mức giá đã chọn
-- Thời gian hoạt động phải hợp lý (format HH:mm:ss)
 - Ưu tiên các điểm đến đã gợi ý trong danh sách destinations
 - Nếu có điểm xuất phát, tính toán chi phí và thời gian di chuyển
 ";

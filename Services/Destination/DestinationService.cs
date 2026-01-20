@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TravelTechApi.Data;
 using TravelTechApi.DTOs.Destination;
 using TravelTechApi.Entities;
-using TravelTechApi.Services.Interfaces;
+using TravelTechApi.Services.Cloudinary;
 
 namespace TravelTechApi.Services.Destination
 {

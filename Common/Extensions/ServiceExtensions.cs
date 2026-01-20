@@ -1,9 +1,10 @@
 using TravelTechApi.Common.Settings;
+using TravelTechApi.Services.AI;
 using TravelTechApi.Services.Auth;
 using TravelTechApi.Services.Cloudinary;
 using TravelTechApi.Services.Destination;
 using TravelTechApi.Services.Email;
-using TravelTechApi.Services.Interfaces;
+using TravelTechApi.Services.Plan;
 
 namespace TravelTechApi.Common.Extensions
 {
@@ -30,8 +31,8 @@ namespace TravelTechApi.Common.Extensions
             services.AddScoped<IDestinationService, DestinationService>();
 
             // AI and Plan services
-            services.AddScoped<IAIService, TravelTechApi.Services.AI.OpenAIService>();
-            services.AddScoped<IPlanGenerationService, TravelTechApi.Services.Plan.PlanGenerationService>();
+            services.AddScoped<IAIService, OpenAIService>();
+            services.AddScoped<IPlanGenerationService, PlanGenerationService>();
 
             return services;
         }

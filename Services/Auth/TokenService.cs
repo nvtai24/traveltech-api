@@ -6,8 +6,6 @@ using System.Security.Cryptography;
 using System.Text;
 using TravelTechApi.Common.Settings;
 using TravelTechApi.Entities;
-using TravelTechApi.Services.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace TravelTechApi.Services.Auth
 {

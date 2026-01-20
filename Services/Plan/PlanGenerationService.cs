@@ -5,7 +5,7 @@ using TravelTechApi.Common.Exceptions;
 using TravelTechApi.Data;
 using TravelTechApi.DTOs.Plan;
 using TravelTechApi.Entities;
-using TravelTechApi.Services.Interfaces;
+using TravelTechApi.Services.AI;
 
 namespace TravelTechApi.Services.Plan
 {

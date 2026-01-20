@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TravelTechApi.Common.Extensions;
 using TravelTechApi.DTOs.Auth;
-using TravelTechApi.Services.Interfaces;
+using TravelTechApi.Services.Auth;
 
 namespace TravelTechApi.Controllers
 {

@@ -1,4 +1,4 @@
-namespace TravelTechApi.Services.Interfaces
+namespace TravelTechApi.Services.AI
 {
     public interface IAIService
     {

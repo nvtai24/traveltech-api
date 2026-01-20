@@ -1,4 +1,3 @@
-using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -6,7 +5,7 @@ using TravelTechApi.Common.Constants;
 using TravelTechApi.Common.Extensions;
 using TravelTechApi.DTOs.Common;
 using TravelTechApi.DTOs.Destination;
-using TravelTechApi.Services.Interfaces;
+using TravelTechApi.Services.Destination;
 
 namespace TravelTechApi.Controllers
 {

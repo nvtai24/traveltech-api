@@ -1,6 +1,6 @@
 using TravelTechApi.DTOs.Destination;
 
-namespace TravelTechApi.Services.Interfaces
+namespace TravelTechApi.Services.Destination
 {
     /// <summary>
     /// Service for Destination operations

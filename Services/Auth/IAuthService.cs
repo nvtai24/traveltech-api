@@ -1,6 +1,6 @@
 using TravelTechApi.DTOs.Auth;
 
-namespace TravelTechApi.Services.Interfaces
+namespace TravelTechApi.Services.Auth
 {
     /// <summary>
     /// Service for authentication operations

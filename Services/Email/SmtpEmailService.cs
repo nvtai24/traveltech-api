@@ -3,7 +3,6 @@ using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using TravelTechApi.Common.Settings;
-using TravelTechApi.Services.Interfaces;
 
 namespace TravelTechApi.Services.Email
 {

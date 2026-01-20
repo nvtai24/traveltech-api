@@ -6,7 +6,6 @@ using TravelTechApi.Common.Settings;
 using TravelTechApi.Data;
 using TravelTechApi.DTOs.Cloudinary;
 using TravelTechApi.Entities;
-using TravelTechApi.Services.Interfaces;
 
 namespace TravelTechApi.Services.Cloudinary
 {
