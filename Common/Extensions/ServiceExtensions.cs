@@ -1,3 +1,4 @@
+using StackExchange.Redis;
 using TravelTechApi.Common.Settings;
 using TravelTechApi.Services.AI;
 using TravelTechApi.Services.Auth;
@@ -5,6 +6,7 @@ using TravelTechApi.Services.Cloudinary;
 using TravelTechApi.Services.Destination;
 using TravelTechApi.Services.Email;
 using TravelTechApi.Services.Plan;
+using TravelTechApi.Services.Quota;
 using TravelTechApi.Services.UserPlanSubscription;
 
 namespace TravelTechApi.Common.Extensions
@@ -33,6 +35,7 @@ namespace TravelTechApi.Common.Extensions
             services.AddScoped<IAIService, OpenAIService>();
             services.AddScoped<IPlanGenerationService, PlanGenerationService>();
             services.AddScoped<IUserPlanSubscriptionService, UserPlanSubscriptionService>();
+            services.AddScoped<IQuotaService, QuotaService>();
 
             return services;
         }

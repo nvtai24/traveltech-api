@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using TravelTechApi.Common.Constants;
 using TravelTechApi.Data;
 using TravelTechApi.Entities;
@@ -20,6 +21,10 @@ namespace TravelTechApi.Common.Extensions
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+
+            // Register Redis
+            var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
 
             return services;
         }

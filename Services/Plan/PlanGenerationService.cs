@@ -6,6 +6,7 @@ using TravelTechApi.Data;
 using TravelTechApi.DTOs.Plan;
 using TravelTechApi.Entities;
 using TravelTechApi.Services.AI;
+using TravelTechApi.Services.UserPlanSubscription;
 
 namespace TravelTechApi.Services.Plan
 {
@@ -16,20 +17,30 @@ namespace TravelTechApi.Services.Plan
         private readonly IMapper _mapper;
         private readonly ILogger<PlanGenerationService> _logger;
 
+        private readonly IUserPlanSubscriptionService _userPlanSubscriptionService;
+
         public PlanGenerationService(
             ApplicationDbContext context,
             IAIService aiService,
             IMapper mapper,
-            ILogger<PlanGenerationService> logger)
+            ILogger<PlanGenerationService> logger,
+            IUserPlanSubscriptionService userPlanSubscriptionService)
         {
             _context = context;
             _aiService = aiService;
             _mapper = mapper;
             _logger = logger;
+            _userPlanSubscriptionService = userPlanSubscriptionService;
         }
 
         public async Task<PlanResponse> GeneratePlanAsync(GeneratePlanRequest request, string userId)
         {
+            var isLimited = await _userPlanSubscriptionService.IsPlanLimitedAsync(userId);
+            if (isLimited)
+            {
+                throw new InvalidOperationException("You have reached the maximum number of plans allowed for your subscription level.");
+            }
+
             try
             {
                 _logger.LogInformation("Generating travel plan for user {UserId}, location {LocationId}", userId, request.LocationId);
