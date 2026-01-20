@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using TravelTechApi.Common.Utils;
 using TravelTechApi.Data;
 using TravelTechApi.DTOs.Destination;
 using TravelTechApi.Entities;
@@ -51,12 +52,12 @@ namespace TravelTechApi.Services.Destination
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
-                keyword = keyword.Trim().ToLower();
-                destinations = destinations.Where(d => d.Name.ToLower().Contains(keyword)
-                 || d.Title.ToLower().Contains(keyword)
-                 || d.Description.ToLower().Contains(keyword)
-                 || d.History.ToLower().Contains(keyword)
-                 || d.Tags.Any(tag => tag.ToLower().Contains(keyword))).ToList();
+                keyword = TextUtils.RemoveDiacritics(keyword).Trim();
+                destinations = destinations.Where(d => TextUtils.CheckContains(d.Name, keyword)
+                 || TextUtils.CheckContains(d.Title, keyword)
+                 || TextUtils.CheckContains(d.Description, keyword)
+                 || TextUtils.CheckContains(d.History, keyword)
+                 || d.Tags.Any(tag => TextUtils.CheckContains(tag, keyword))).ToList();
             }
 
             return _mapper.Map<IEnumerable<DestinationResponse>>(destinations);
