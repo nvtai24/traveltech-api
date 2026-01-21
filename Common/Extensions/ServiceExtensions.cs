@@ -4,6 +4,7 @@ using TravelTechApi.Common.Settings;
 using TravelTechApi.Services.AI;
 using TravelTechApi.Services.Auth;
 using TravelTechApi.Services.Cloudinary;
+using TravelTechApi.Services.Contact;
 using TravelTechApi.Services.Destination;
 using TravelTechApi.Services.Email;
 using TravelTechApi.Services.Plan;
@@ -39,6 +40,7 @@ namespace TravelTechApi.Common.Extensions
             services.AddScoped<IQuotaService, QuotaService>();
             services.AddScoped<ITravelHobbyService, TravelHobbyService>();
             services.AddScoped<IPriceSettingService, PriceSettingService>();
+            services.AddScoped<IContactService, ContactService>();
 
             return services;
         }

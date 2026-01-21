@@ -3,6 +3,8 @@ using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using TravelTechApi.Common.Settings;
+using TravelTechApi.DTOs.Contact;
+using TravelTechApi.Entities;
 
 namespace TravelTechApi.Services.Email
 {
@@ -111,6 +113,65 @@ namespace TravelTechApi.Services.Email
                 _logger.LogError(ex, "Failed to send email to: {To}", to);
                 throw;
             }
+        }
+
+        public async Task SendEmailContactAsync(string companyEmail, ContactMessage contactMessage)
+        {
+            var subject = $"New Contact Message: {contactMessage.FullName} - {contactMessage.ContactTopic.Name}";
+
+            var htmlBody = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 10px 10px; }}
+        .field {{ margin-bottom: 15px; }}
+        .label {{ font-weight: bold; color: #555; }}
+        .value {{ margin-top: 5px; padding: 10px; background-color: white; border-left: 3px solid #4CAF50; }}
+        .message-box {{ margin-top: 10px; padding: 15px; background-color: white; border: 1px solid #ddd; min-height: 100px; white-space: pre-wrap; }}
+        .footer {{ margin-top: 20px; padding: 15px; text-align: center; font-size: 12px; color: #777; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2>📧 New Contact Message Received</h2>
+        </div>
+        <div class='content'>
+            <div class='field'>
+                <div class='label'>Full Name:</div>
+                <div class='value'>{contactMessage.FullName}</div>
+            </div>
+            <div class='field'>
+                <div class='label'>Email:</div>
+                <div class='value'><a href='mailto:{contactMessage.Email}'>{contactMessage.Email}</a></div>
+            </div>
+            <div class='field'>
+                <div class='label'>Phone Number:</div>
+                <div class='value'><a href='tel:{contactMessage.PhoneNumber}'>{contactMessage.PhoneNumber}</a></div>
+            </div>
+            <div class='field'>
+                <div class='label'>Message:</div>
+                <div class='message-box'>{contactMessage.Message}</div>
+            </div>
+            <div class='field'>
+                <div class='label'>Submitted at:</div>
+                <div class='value'>{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC</div>
+            </div>
+        </div>
+        <div class='footer'>
+            <p>This is an automated message from TravelTech Contact Form</p>
+            <p>Please respond directly to the customer's email: <a href='mailto:{contactMessage.Email}'>{contactMessage.Email}</a></p>
+        </div>
+    </div>
+</body>
+</html>";
+
+            await SendEmailAsync(companyEmail, subject, htmlBody);
+            _logger.LogInformation("Contact form email sent to company from: {CustomerEmail}", contactMessage.Email);
         }
     }
 }

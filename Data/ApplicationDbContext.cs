@@ -39,6 +39,10 @@ namespace TravelTechApi.Data
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
         public DbSet<UserPlanSubscription> UserPlanSubscriptions { get; set; }
 
+        // Contact entities
+        public DbSet<ContactTopic> ContactTopics { get; set; }
+        public DbSet<ContactMessage> ContactMessages { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -280,6 +284,34 @@ namespace TravelTechApi.Data
                     .WithMany(p => p.Users)
                     .HasForeignKey(e => e.SubscriptionPlanId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure ContactTopic
+            builder.Entity<ContactTopic>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+
+                entity.HasMany(e => e.ContactMessages)
+                    .WithOne(m => m.ContactTopic)
+                    .HasForeignKey(m => m.ContactTopicId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure ContactMessage
+            builder.Entity<ContactMessage>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.FullName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(254);
+                entity.Property(e => e.PhoneNumber).HasMaxLength(20);
+                entity.Property(e => e.Message).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(e => e.ContactTopic)
+                    .WithMany(t => t.ContactMessages)
+                    .HasForeignKey(e => e.ContactTopicId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

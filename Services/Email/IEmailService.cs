@@ -1,3 +1,5 @@
+using TravelTechApi.Entities;
+
 namespace TravelTechApi.Services.Email
 {
     /// <summary>
@@ -20,5 +22,7 @@ namespace TravelTechApi.Services.Email
         /// <param name="subject">Email subject</param>
         /// <param name="htmlBody">Email HTML body</param>
         Task SendEmailAsync(string to, string subject, string htmlBody);
+
+        Task SendEmailContactAsync(string companyEmail, ContactMessage contactMessage);
     }
 }
