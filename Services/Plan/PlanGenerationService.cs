@@ -38,7 +38,7 @@ namespace TravelTechApi.Services.Plan
             var isLimited = await _userPlanSubscriptionService.IsPlanLimitedAsync(userId);
             if (isLimited)
             {
-                throw new InvalidOperationException("You have reached the maximum number of plans allowed for your subscription level.");
+                throw new BadRequestException("You have reached the maximum number of plans allowed for your subscription level.");
             }
 
             try
