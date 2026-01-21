@@ -123,9 +123,9 @@ namespace TravelTechApi.Controllers
             {
                 Id = userId ?? string.Empty,
                 Email = email ?? string.Empty,
-                FirstName = firstName,
-                LastName = lastName,
-                PhoneNumber = phoneNumber
+                FirstName = firstName ?? string.Empty,
+                LastName = lastName ?? string.Empty,
+                PhoneNumber = phoneNumber ?? string.Empty
             };
 
             _logger.LogDebug("Retrieved current user info for: {UserId}", userId);

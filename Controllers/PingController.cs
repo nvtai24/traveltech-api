@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 using TravelTechApi.Common.Extensions;
 
 namespace TravelTechApi.Controllers
@@ -7,6 +8,17 @@ namespace TravelTechApi.Controllers
     [ApiController]
     public class PingController : ControllerBase
     {
+
+        private readonly ILogger<PingController> _logger;
+
+        private readonly IConnectionMultiplexer _redis;
+
+        public PingController(ILogger<PingController> logger, IConnectionMultiplexer redis)
+        {
+            _logger = logger;
+            _redis = redis;
+        }
+
         /// <summary>
         /// Health check endpoint
         /// </summary>
@@ -24,6 +36,15 @@ namespace TravelTechApi.Controllers
         public IActionResult GetError()
         {
             throw new Exception("This is a test exception");
+        }
+
+        [HttpGet("redis")]
+        public IActionResult GetRedis()
+        {
+            var db = _redis.GetDatabase();
+            db.StringSet("test", "123456");
+            var value = db.StringGet("test");
+            return this.Success("Redis is working", value.ToString());
         }
     }
 }

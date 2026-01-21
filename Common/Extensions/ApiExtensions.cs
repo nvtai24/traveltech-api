@@ -69,7 +69,7 @@ namespace TravelTechApi.Common.Extensions
             {
                 options.AddPolicy("DefaultCorsPolicy", policy =>
                 {
-                    if (corsSettings.AllowedOrigins.Length > 0 && corsSettings.AllowedOrigins[0] != "*")
+                    if (corsSettings!.AllowedOrigins.Length > 0 && corsSettings.AllowedOrigins[0] != "*")
                     {
                         policy.WithOrigins(corsSettings.AllowedOrigins);
                     }

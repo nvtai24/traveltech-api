@@ -37,8 +37,8 @@ namespace TravelTechApi.Entities
         public string? AIModel { get; set; }
 
         // User
-        public string UserId { get; set; }
-        public ApplicationUser ApplicationUser { get; set; } = null!;
+        public string? UserId { get; set; }
+        public ApplicationUser? ApplicationUser { get; set; }
 
         // Navigation properties for generated plan
         public virtual ICollection<DailyItinerary> DailyItineraries { get; set; } = new List<DailyItinerary>();

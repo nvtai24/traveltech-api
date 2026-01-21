@@ -85,27 +85,29 @@ namespace TravelTechApi.Common
         /// <summary>
         /// Creates a successful response without data
         /// </summary>
-        public new static ApiResponse CreateSuccess(string message = "Operation completed successfully")
+        public static ApiResponse CreateSuccess(string message = "Operation completed successfully")
         {
-            var response = new ApiResponse();
-            response.Success = true;
-            response.Message = message;
-            response.Data = null;
-            response.Errors = null;
-            return response;
+            return new ApiResponse
+            {
+                Success = true,
+                Message = message,
+                Data = null,
+                Errors = null
+            };
         }
 
         /// <summary>
         /// Creates a failure response without data
         /// </summary>
-        public new static ApiResponse CreateFailure(string message, List<ErrorDetail>? errors = null)
+        public static ApiResponse CreateFailure(string message, List<ErrorDetail>? errors = null)
         {
-            var response = new ApiResponse();
-            response.Success = false;
-            response.Message = message;
-            response.Data = null;
-            response.Errors = errors;
-            return response;
+            return new ApiResponse
+            {
+                Success = false,
+                Message = message,
+                Data = null,
+                Errors = errors
+            };
         }
     }
 
