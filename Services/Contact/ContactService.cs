@@ -1,5 +1,7 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using TravelTechApi.Common.Exceptions;
 using TravelTechApi.Data;
 using TravelTechApi.DTOs.Contact;
@@ -44,5 +46,10 @@ public class ContactService : IContactService
             return true;
         }
         return false;
+    }
+
+    public async Task<List<ContactTopicDto>> GetTopicsAsync()
+    {
+        return await _context.ContactTopics.ProjectTo<ContactTopicDto>(_mapper.ConfigurationProvider).ToListAsync();
     }
 }

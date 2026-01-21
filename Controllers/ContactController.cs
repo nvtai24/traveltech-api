@@ -13,7 +13,7 @@ public class ContactController : ControllerBase
 {
     private readonly IContactService _contactService;
 
-    public ContactController(IContactService contactService, IMapper mapper)
+    public ContactController(IContactService contactService)
     {
         _contactService = contactService;
     }
@@ -27,5 +27,12 @@ public class ContactController : ControllerBase
             return this.Success("Send email successfully");
         }
         return this.InternalServerError("Send email failed");
+    }
+
+    [HttpGet("topics")]
+    public async Task<IActionResult> GetTopicsAsync()
+    {
+        var topics = await _contactService.GetTopicsAsync();
+        return this.Success(topics);
     }
 }

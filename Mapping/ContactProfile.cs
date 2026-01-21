@@ -9,5 +9,7 @@ public class ContactProfile : Profile
     public ContactProfile()
     {
         CreateMap<ContactMessageRequest, ContactMessage>();
+
+        CreateMap<ContactTopic, ContactTopicDto>();
     }
 }
