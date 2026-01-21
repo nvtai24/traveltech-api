@@ -36,8 +36,6 @@ namespace TravelTechApi.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
-            _logger.LogInformation("GET /api/destinations called with regionId: {RegionId}, locationId: {LocationId}, page: {Page}, pageSize: {PageSize}",
-         regionId, locationId, page, pageSize);
 
             // Validate pagination parameters
             if (page < 1) page = 1;
@@ -68,7 +66,6 @@ namespace TravelTechApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDestinationById(int id)
         {
-            _logger.LogInformation("GET /api/destinations/{DestinationId} called", id);
             var destination = await _destinationService.GetDestinationByIdAsync(id);
 
             if (destination == null)
@@ -86,7 +83,6 @@ namespace TravelTechApi.Controllers
         [HttpGet("{id}/sharings")]
         public async Task<IActionResult> GetDestinationSharings(int id)
         {
-            _logger.LogInformation("GET /api/destinations/{DestinationId}/sharings called", id);
 
             // Check if destination exists
             var destination = await _destinationService.GetDestinationByIdAsync(id);
@@ -117,7 +113,6 @@ namespace TravelTechApi.Controllers
                     return this.Unauthorized("User not authenticated");
                 }
 
-                _logger.LogInformation("POST /api/destinations/{DestinationId}/sharings called by user {UserId}", id, userId);
 
                 // Validate comment
                 if (string.IsNullOrWhiteSpace(createDestinationSharingRequest.Comment))
@@ -152,7 +147,6 @@ namespace TravelTechApi.Controllers
         {
             try
             {
-                _logger.LogInformation("POST /api/destinations called - Creating new destination: {Name}", createDestinationRequest.Name);
 
                 // Validate required fields
                 if (string.IsNullOrWhiteSpace(createDestinationRequest.Name))

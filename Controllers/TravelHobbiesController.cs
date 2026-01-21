@@ -10,10 +10,12 @@ namespace TravelTechApi.Controllers;
 public class TravelHobbiesController : ControllerBase
 {
     private readonly ITravelHobbyService _travelHobbyService;
+    private readonly ILogger<TravelHobbiesController> _logger;
 
-    public TravelHobbiesController(ITravelHobbyService travelHobbyService)
+    public TravelHobbiesController(ITravelHobbyService travelHobbyService, ILogger<TravelHobbiesController> logger)
     {
         _travelHobbyService = travelHobbyService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -31,6 +33,7 @@ public class TravelHobbiesController : ControllerBase
         {
             return this.Failed("Travel hobby updated failed");
         }
+
         return this.Success("Travel hobby updated successfully");
     }
 }

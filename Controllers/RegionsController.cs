@@ -27,7 +27,6 @@ namespace TravelTechApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllRegions()
         {
-            _logger.LogInformation("GET /api/regions called");
             var regions = await _regionService.GetAllRegionsAsync();
             return this.Success(regions, "Regions retrieved successfully");
         }

@@ -11,10 +11,12 @@ namespace TravelTechApi.Controllers;
 public class PriceSettingsController : ControllerBase
 {
     private readonly IPriceSettingService _priceSettingsService;
+    private readonly ILogger<PriceSettingsController> _logger;
 
-    public PriceSettingsController(IPriceSettingService priceSettingsService)
+    public PriceSettingsController(IPriceSettingService priceSettingsService, ILogger<PriceSettingsController> logger)
     {
         _priceSettingsService = priceSettingsService;
+        _logger = logger;
     }
 
     [HttpGet]

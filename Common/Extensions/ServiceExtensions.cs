@@ -1,4 +1,5 @@
 using StackExchange.Redis;
+using TravelTechApi.Common.Filters;
 using TravelTechApi.Common.Settings;
 using TravelTechApi.Services.AI;
 using TravelTechApi.Services.Auth;
@@ -60,6 +61,18 @@ namespace TravelTechApi.Common.Extensions
             // AI Settings
             services.Configure<AISettings>(configuration.GetSection("AISettings"));
 
+            return services;
+        }
+
+        /// <summary>
+        /// Register logging action filter
+        /// </summary>
+        public static IServiceCollection AddLoggingFilter(this IServiceCollection services)
+        {
+            services.AddControllers(options =>
+            {
+                options.Filters.Add<LoggingActionFilter>();
+            });
             return services;
         }
     }

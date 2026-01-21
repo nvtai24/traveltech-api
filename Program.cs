@@ -16,6 +16,7 @@ namespace TravelTechApi
             builder.Services.AddApplicationServices();
             builder.Services.AddCorsConfiguration(builder.Configuration);
             builder.Services.AddApiConfiguration();
+            builder.Services.AddLoggingFilter();
 
             var app = builder.Build();
 

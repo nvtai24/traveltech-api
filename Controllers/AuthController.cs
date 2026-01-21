@@ -29,7 +29,6 @@ namespace TravelTechApi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
         {
-            _logger.LogInformation("POST /api/auth/register called for email: {Email}", registerRequest.Email);
             var result = await _authService.RegisterAsync(registerRequest);
             _logger.LogInformation("User registered successfully: {Email}", registerRequest.Email);
             return this.Created(result, result.Message);
@@ -41,7 +40,6 @@ namespace TravelTechApi.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            _logger.LogInformation("POST /api/auth/login called for email: {Email}", loginRequest.Email);
             var result = await _authService.LoginAsync(loginRequest);
             _logger.LogInformation("Login successful for email: {Email}", loginRequest.Email);
             return this.Success(result, "Login successful");
@@ -53,7 +51,6 @@ namespace TravelTechApi.Controllers
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest refreshTokenRequest)
         {
-            _logger.LogInformation("POST /api/auth/refresh-token called");
             var result = await _authService.RefreshTokenAsync(refreshTokenRequest);
             _logger.LogInformation("Token refreshed successfully");
             return this.Success(result, "Token refreshed successfully");
@@ -66,7 +63,6 @@ namespace TravelTechApi.Controllers
         [HttpPost("revoke-token")]
         public async Task<IActionResult> RevokeToken()
         {
-            _logger.LogInformation("POST /api/auth/revoke-token called");
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
@@ -85,7 +81,6 @@ namespace TravelTechApi.Controllers
         [HttpPost("confirm-email")]
         public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest confirmEmailRequest)
         {
-            _logger.LogInformation("POST /api/auth/confirm-email called for userId: {UserId}", confirmEmailRequest.UserId);
             var result = await _authService.ConfirmEmailAsync(confirmEmailRequest.UserId, confirmEmailRequest.Token);
             _logger.LogInformation("Email confirmed successfully for userId: {UserId}", confirmEmailRequest.UserId);
             return this.Success(result, "Email confirmed successfully. You can now login.");
@@ -97,7 +92,6 @@ namespace TravelTechApi.Controllers
         [HttpPost("resend-confirmation")]
         public async Task<IActionResult> ResendConfirmation([FromBody] ResendConfirmationRequest resendConfirmationRequest)
         {
-            _logger.LogInformation("POST /api/auth/resend-confirmation called for email: {Email}", resendConfirmationRequest.Email);
             await _authService.ResendConfirmationEmailAsync(resendConfirmationRequest.Email);
             _logger.LogInformation("Confirmation email resent to: {Email}", resendConfirmationRequest.Email);
             return this.Success("If the email exists and is not confirmed, a confirmation email has been sent.");
@@ -110,7 +104,6 @@ namespace TravelTechApi.Controllers
         [HttpGet("me")]
         public IActionResult GetCurrentUser()
         {
-            _logger.LogInformation("GET /api/auth/me called");
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var email = User.FindFirstValue(ClaimTypes.Email);
             var firstName = User.FindFirstValue(ClaimTypes.GivenName);

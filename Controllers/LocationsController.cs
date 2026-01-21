@@ -26,8 +26,6 @@ namespace TravelTechApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllLocations([FromQuery] int? regionId = null)
         {
-            _logger.LogInformation("GET /api/locations called with regionId: {RegionId}", regionId);
-
             var locations = regionId.HasValue
                 ? await _locationService.GetLocationsByRegionIdAsync(regionId.Value)
                 : await _locationService.GetAllLocationsAsync();
@@ -41,7 +39,6 @@ namespace TravelTechApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLocationById(int id)
         {
-            _logger.LogInformation("GET /api/locations/{LocationId} called", id);
             var location = await _locationService.GetLocationByIdAsync(id);
 
             if (location == null)
