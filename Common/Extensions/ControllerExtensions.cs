@@ -79,5 +79,10 @@ namespace TravelTechApi.Common.Extensions
                 ApiResponse<object>.FailureResponse(message)
             );
         }
+
+        public static IActionResult Failed(this ControllerBase controller, string message)
+        {
+            return controller.BadRequest(ApiResponse<object>.FailureResponse(message));
+        }
     }
 }

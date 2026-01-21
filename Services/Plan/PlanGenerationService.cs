@@ -269,7 +269,7 @@ namespace TravelTechApi.Services.Plan
             if (plan == null)
                 return false;
 
-            _context.Plans.Remove(plan);
+            plan.IsSaved = false;
             await _context.SaveChangesAsync();
 
             return true;

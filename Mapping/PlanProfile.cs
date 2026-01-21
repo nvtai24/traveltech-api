@@ -1,4 +1,5 @@
 using AutoMapper;
+using TravelTechApi.DTOs.Destination;
 using TravelTechApi.DTOs.Plan;
 using TravelTechApi.Entities;
 
@@ -29,6 +30,12 @@ namespace TravelTechApi.Mapping
 
             // TransportationRecommendation mappings
             CreateMap<TransportationRecommendation, TransportationRecommendationResponse>();
+
+            CreateMap<PriceSettingDto, PriceSetting>();
+            CreateMap<PriceSetting, PriceSettingDto>();
+
+            CreateMap<TravelHobbyDto, TravelHobby>();
+            CreateMap<TravelHobby, TravelHobbyDto>();
         }
     }
 }

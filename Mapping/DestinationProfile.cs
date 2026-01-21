@@ -44,6 +44,8 @@ namespace TravelTechApi.Mapping
 
             CreateMap<FaqDto, FAQ>();
 
+
+
         }
     }
 }

@@ -36,6 +36,8 @@ namespace TravelTechApi.Common.Extensions
             services.AddScoped<IPlanGenerationService, PlanGenerationService>();
             services.AddScoped<IUserPlanSubscriptionService, UserPlanSubscriptionService>();
             services.AddScoped<IQuotaService, QuotaService>();
+            services.AddScoped<ITravelHobbyService, TravelHobbyService>();
+            services.AddScoped<IPriceSettingService, PriceSettingService>();
 
             return services;
         }
