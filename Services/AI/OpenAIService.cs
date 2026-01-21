@@ -53,31 +53,39 @@ namespace TravelTechApi.Services.AI
                     destinationNames
                 );
 
-                _logger.LogInformation("Generating travel plan with OpenAI for location: {Location}", locationName);
+                _logger.LogInformation("Generating travel plan with OpenAI for location: {Location}, Model: {Model}", locationName, _aiSettings.Model);
 
                 var messages = new List<ChatMessage>
                 {
-                    new SystemChatMessage("You are an expert travel planner specializing in Vietnam tourism. You create detailed, practical travel itineraries with accurate pricing and recommendations."),
+                    new SystemChatMessage("You are an expert travel planner specializing in Vietnam tourism. You create detailed, practical travel itineraries with accurate pricing and recommendations. You MUST respond with valid JSON only, no markdown formatting."),
                     new UserChatMessage(prompt)
                 };
 
                 var chatCompletionOptions = new ChatCompletionOptions
                 {
                     MaxOutputTokenCount = _aiSettings.MaxTokens,
-                    Temperature = (float)_aiSettings.Temperature
+                    Temperature = (float)_aiSettings.Temperature,
+                    ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat() // Force JSON response
                 };
 
+                _logger.LogInformation("Sending request to OpenAI...");
                 var completion = await _chatClient.CompleteChatAsync(messages, chatCompletionOptions);
 
                 var response = completion.Value.Content[0].Text;
 
-                _logger.LogInformation("Successfully generated travel plan");
+                if (string.IsNullOrWhiteSpace(response))
+                {
+                    _logger.LogError("OpenAI returned empty response");
+                    throw new Exception("AI service returned empty response");
+                }
+
+                _logger.LogInformation("Successfully generated travel plan. Response length: {Length} characters", response.Length);
 
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error generating travel plan with OpenAI");
+                _logger.LogError(ex, "Error generating travel plan with OpenAI. Model: {Model}, Error: {Message}", _aiSettings.Model, ex.Message);
                 throw;
             }
         }
