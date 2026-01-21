@@ -1,4 +1,5 @@
 using StackExchange.Redis;
+using TravelTechApi.DTOs.Quota;
 
 namespace TravelTechApi.Services.Quota
 {
@@ -63,6 +64,20 @@ namespace TravelTechApi.Services.Quota
         {
             var dateKey = DateTime.Now.ToString("ddMMyyyy");
             return $"quota:{featureName}:{userId}:{dateKey}";
+        }
+
+        public async Task<QuotaResponse> CheckLimit(string featureName, string userId, int limit)
+        {
+            var db = _redis.GetDatabase();
+            var key = GenerateQuotaKey(featureName, userId);
+            var currentUsage = await db.StringGetAsync(key);
+            var usageCount = currentUsage.HasValue ? (int)currentUsage : 0;
+            return new QuotaResponse
+            {
+                Limit = limit,
+                CurrentUsage = usageCount,
+                HasRemainingQuota = usageCount < limit
+            };
         }
     }
 }

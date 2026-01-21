@@ -1,3 +1,5 @@
+using TravelTechApi.DTOs.Quota;
+
 namespace TravelTechApi.Services.Quota
 {
     /// <summary>
@@ -28,5 +30,7 @@ namespace TravelTechApi.Services.Quota
         /// <param name="featureName">Name of the feature</param>
         /// <param name="userId">User ID</param>
         Task ResetQuotaAsync(string featureName, string userId);
+
+        Task<QuotaResponse> CheckLimit(string featureName, string userId, int limit);
     }
 }
