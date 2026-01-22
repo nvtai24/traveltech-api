@@ -78,6 +78,7 @@ namespace TravelTechApi.Services.Destination
         {
             _logger.LogInformation("Getting destinations sharings by destination id: {DestinationId}", destinationId);
             var destinationSharings = await _context.DestinationSharings
+                .Include(ds => ds.Images)
                 .Include(ds => ds.User)
                 .Where(ds => ds.DestinationId == destinationId)
                 .ToListAsync();
