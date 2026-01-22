@@ -43,6 +43,9 @@ namespace TravelTechApi.Data
         public DbSet<ContactTopic> ContactTopics { get; set; }
         public DbSet<ContactMessage> ContactMessages { get; set; }
 
+        // Payment
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -311,6 +314,30 @@ namespace TravelTechApi.Data
                 entity.HasOne(e => e.ContactTopic)
                     .WithMany(t => t.ContactMessages)
                     .HasForeignKey(e => e.ContactTopicId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure PaymentTransaction
+            builder.Entity<PaymentTransaction>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.OrderCode).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => e.OrderCode).IsUnique();
+                entity.Property(e => e.Amount).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.CreatedAt).IsRequired();
+                entity.Property(e => e.UpdatedAt).IsRequired();
+                entity.Property(e => e.Status).IsRequired().HasConversion<string>();
+                // entity.Property(e => e.PaymentMethod).IsRequired().HasConversion<string>();
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.SubscriptionPlan)
+                    .WithMany()
+                    .HasForeignKey(e => e.SubscriptionPlanId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
         }

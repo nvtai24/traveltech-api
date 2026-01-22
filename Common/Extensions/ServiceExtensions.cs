@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using StackExchange.Redis;
 using TravelTechApi.Common.Filters;
 using TravelTechApi.Common.Settings;
@@ -7,6 +8,7 @@ using TravelTechApi.Services.Cloudinary;
 using TravelTechApi.Services.Contact;
 using TravelTechApi.Services.Destination;
 using TravelTechApi.Services.Email;
+using TravelTechApi.Services.Payment;
 using TravelTechApi.Services.Plan;
 using TravelTechApi.Services.Quota;
 using TravelTechApi.Services.UserPlanSubscription;
@@ -41,6 +43,7 @@ namespace TravelTechApi.Common.Extensions
             services.AddScoped<ITravelHobbyService, TravelHobbyService>();
             services.AddScoped<IPriceSettingService, PriceSettingService>();
             services.AddScoped<IContactService, ContactService>();
+            services.AddScoped<IPaymentService, SepayPaymentService>();
 
             return services;
         }
@@ -63,6 +66,8 @@ namespace TravelTechApi.Common.Extensions
             // AI Settings
             services.Configure<AISettings>(configuration.GetSection("AISettings"));
 
+            services.Configure<SepaySettings>(configuration.GetSection("SepaySettings"));
+
             return services;
         }
 
@@ -77,5 +82,17 @@ namespace TravelTechApi.Common.Extensions
             });
             return services;
         }
+
+        public static IServiceCollection AddJsonConverter(this IServiceCollection services)
+        {
+            services.AddControllers()
+            .AddJsonOptions(o =>
+            {
+                o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
+            return services;
+        }
+
+
     }
 }
