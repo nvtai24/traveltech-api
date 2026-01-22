@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using TravelTechApi.Entities;
 
@@ -25,19 +26,18 @@ namespace TravelTechApi.DTOs.Payment
 
     public class SepayWebhookRequest
     {
-        [JsonProperty("id")]
-        public string TransactionId { get; set; } = string.Empty;
+        [JsonPropertyName("id")]
+        public long TransactionId { get; set; }
         public string Gateway { get; set; } = string.Empty;
         public string AccountNumber { get; set; } = string.Empty;
-
         public string Content { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        [JsonProperty("transferAmount")]
+        [JsonPropertyName("transferAmount")]
         public decimal Amount { get; set; }
-        public DateTime TransactionDate { get; set; }
+        public string TransactionDate { get; set; } = string.Empty;
     }
 
-    public class PaymentTransactionDto
+    public class PaymentTransactionResponse
     {
         public Guid Id { get; set; }
         public string OrderCode { get; set; } = string.Empty;

@@ -57,7 +57,6 @@ namespace TravelTechApi.Services.Payment
                     Status = PaymentStatus.Pending,
                     Description = orderCode, // Important: SePay matches based on this content
                     CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
                 };
 
                 await _context.PaymentTransactions.AddAsync(payment);
@@ -95,7 +94,7 @@ namespace TravelTechApi.Services.Payment
             }
         }
 
-        public async Task<PaymentTransactionDto> GetPaymentByIdAsync(Guid paymentId, string userId)
+        public async Task<PaymentTransactionResponse> GetPaymentByIdAsync(Guid paymentId, string userId)
         {
             try
             {
@@ -108,7 +107,7 @@ namespace TravelTechApi.Services.Payment
                     throw new NotFoundException("Payment not found");
                 }
 
-                var dto = new PaymentTransactionDto
+                var dto = new PaymentTransactionResponse
                 {
                     Id = payment.Id,
                     OrderCode = payment.OrderCode,
@@ -118,7 +117,8 @@ namespace TravelTechApi.Services.Payment
                     Status = payment.Status,
                     CreatedAt = payment.CreatedAt,
                     TransactionDate = payment.TransactionDate
-                };
+                }
+                ;
 
                 return dto;
             }
@@ -129,7 +129,7 @@ namespace TravelTechApi.Services.Payment
             }
         }
 
-        public async Task<List<PaymentTransactionDto>> GetUserPaymentHistoryAsync(string userId)
+        public async Task<List<PaymentTransactionResponse>> GetUserPaymentHistoryAsync(string userId)
         {
             try
             {
@@ -139,7 +139,7 @@ namespace TravelTechApi.Services.Payment
                     .OrderByDescending(p => p.CreatedAt)
                     .ToListAsync();
 
-                var dtos = payments.Select(p => new PaymentTransactionDto
+                var dtos = payments.Select(p => new PaymentTransactionResponse
                 {
                     Id = p.Id,
                     OrderCode = p.OrderCode,
@@ -164,22 +164,20 @@ namespace TravelTechApi.Services.Payment
         {
             try
             {
-                _logger.LogInformation("Webhook received: {Data}", System.Text.Json.JsonSerializer.Serialize(webhookData));
-
                 // 1. Find payment by matching OrderCode in content
                 // SePay sends content like "PLAN1U123..."
                 // Logic: Search for a pending transaction where OrderCode matches (or is contained in) the description
-                var orderCode = webhookData.Description;
+                var contentData = webhookData.Content;
 
                 // Simple strict match first
                 var payment = await _context.PaymentTransactions
                     .Include(p => p.SubscriptionPlan)
-                    .FirstOrDefaultAsync(p => p.OrderCode == orderCode); // Can relax this to Contains if needed
+                    .FirstOrDefaultAsync(p => contentData.Contains(p.OrderCode)); // Can relax this to Contains if needed
 
                 if (payment == null)
                 {
-                    _logger.LogWarning("No payment found for code: {Code}", orderCode);
-                    throw new NotFoundException("Payment not found");
+                    _logger.LogWarning("No payment found for code: {Code}", contentData);
+                    throw new BadRequestException("Payment not found");
                 }
 
                 if (payment.Status == PaymentStatus.Completed)
@@ -191,14 +189,16 @@ namespace TravelTechApi.Services.Payment
                 if (payment.Amount != webhookData.Amount)
                 {
                     _logger.LogWarning("Amount mismatch. Expected {Exp}, Got {Got}", payment.Amount, webhookData.Amount);
-                    throw new Exception("Amount mismatch");
+                    throw new BadRequestException("Amount mismatch");
                 }
 
                 // 3. Mark as Completed
                 payment.Status = PaymentStatus.Completed;
                 payment.TransactionId = webhookData.TransactionId;
-                payment.TransactionDate = webhookData.TransactionDate;
-                // payment.BankCode = webhookData.BankCode;
+                payment.TransactionDate = DateTime.Parse(webhookData.TransactionDate);
+                payment.Gateway = webhookData.Gateway;
+                payment.AccountNumber = webhookData.AccountNumber;
+                payment.Content = webhookData.Content;
                 payment.UpdatedAt = DateTime.UtcNow;
 
                 // 4. Activate Subscription

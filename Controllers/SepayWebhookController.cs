@@ -24,10 +24,9 @@ namespace TravelTechApi.Controllers
         [HttpPost("sepay")]
         public async Task<IActionResult> ReceiveWebhook([FromBody] SepayWebhookRequest dto)
         {
-            _logger.LogInformation("Received webhook request: {Request}", dto);
-
+            _logger.LogInformation("Received webhook request: {Request}", System.Text.Json.JsonSerializer.Serialize(dto));
             var apiKeyHeader = Request.Headers["Authorization"].FirstOrDefault();
-            var expected = _sepaySettings.WebhookApiKey;
+            var expected = "Apikey " + _sepaySettings.WebhookApiKey;
 
             if (string.IsNullOrEmpty(apiKeyHeader) || apiKeyHeader != expected)
             {

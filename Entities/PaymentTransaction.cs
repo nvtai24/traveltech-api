@@ -15,9 +15,12 @@ namespace TravelTechApi.Entities
         public PaymentStatus Status { get; set; }
 
         // SePay / Bank fields
-        public string? TransactionId { get; set; } // Bank transaction ID
+        public long TransactionId { get; set; } // Bank transaction ID
+        public string? Gateway { get; set; }
+        public string? AccountNumber { get; set; }
         public string? BankCode { get; set; }
         public DateTime? TransactionDate { get; set; }
+        public string Content { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; }
