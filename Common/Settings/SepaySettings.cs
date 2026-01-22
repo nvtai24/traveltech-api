@@ -8,5 +8,6 @@ namespace TravelTechApi.Common.Settings
         public string BankCode { get; set; } = string.Empty;
         public string ApiBaseUrl { get; set; } = "https://my.sepay.vn/userapi";
         public string QRCodeBaseUrl { get; set; } = "https://img.vietqr.io/image";
+        public string WebhookApiKey { get; set; } = string.Empty;
     }
 }
