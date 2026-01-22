@@ -12,21 +12,26 @@ namespace TravelTechApi.Controllers
     {
         private readonly IPaymentService _paymentService;
         private readonly SepaySettings _sepaySettings;
+        private readonly ILogger<SepayWebhookController> _logger;
 
-        public SepayWebhookController(IPaymentService paymentService, IOptions<SepaySettings> sepaySettings)
+        public SepayWebhookController(IPaymentService paymentService, IOptions<SepaySettings> sepaySettings, ILogger<SepayWebhookController> logger)
         {
             _paymentService = paymentService;
             _sepaySettings = sepaySettings.Value;
+            _logger = logger;
         }
 
         [HttpPost("sepay")]
         public async Task<IActionResult> ReceiveWebhook([FromBody] SepayWebhookRequest dto)
         {
+            _logger.LogInformation("Received webhook request: {Request}", dto);
+
             var apiKeyHeader = Request.Headers["Authorization"].FirstOrDefault();
             var expected = _sepaySettings.WebhookApiKey;
 
             if (string.IsNullOrEmpty(apiKeyHeader) || apiKeyHeader != expected)
             {
+                _logger.LogInformation("Invalid API key: {ApiKey}", apiKeyHeader);
                 return Unauthorized(new { success = false, message = "Invalid API key" });
             }
 
