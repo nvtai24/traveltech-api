@@ -160,68 +160,64 @@ namespace TravelTechApi.Services.Payment
             }
         }
 
-        public async Task<bool> ProcessWebhookAsync(SepayWebhookRequest webhookData)
+        public async Task ProcessWebhookAsync(SepayWebhookRequest webhookData)
         {
-            try
+
+            // 1. Find payment by matching OrderCode in content
+            // SePay sends content like "PLAN1U123..."
+            // Logic: Search for a pending transaction where OrderCode matches (or is contained in) the description
+            var contentData = webhookData.Content;
+
+            // Simple strict match first
+            var payment = await _context.PaymentTransactions
+                .Include(p => p.SubscriptionPlan)
+                .FirstOrDefaultAsync(p => contentData.Contains(p.OrderCode)); // Can relax this to Contains if needed
+
+            if (payment == null)
             {
-                // 1. Find payment by matching OrderCode in content
-                // SePay sends content like "PLAN1U123..."
-                // Logic: Search for a pending transaction where OrderCode matches (or is contained in) the description
-                var contentData = webhookData.Content;
-
-                // Simple strict match first
-                var payment = await _context.PaymentTransactions
-                    .Include(p => p.SubscriptionPlan)
-                    .FirstOrDefaultAsync(p => contentData.Contains(p.OrderCode)); // Can relax this to Contains if needed
-
-                if (payment == null)
-                {
-                    _logger.LogWarning("No payment found for code: {Code}", contentData);
-                    throw new BadRequestException("Payment not found");
-                }
-
-                if (payment.Status == PaymentStatus.Completed)
-                {
-                    return true; // Idempotent: already processed
-                }
-
-                // 2. Validate Amount
-                if (payment.Amount != webhookData.Amount)
-                {
-                    _logger.LogWarning("Amount mismatch. Expected {Exp}, Got {Got}", payment.Amount, webhookData.Amount);
-                    throw new BadRequestException("Amount mismatch");
-                }
-
-                // 3. Mark as Completed
-                payment.Status = PaymentStatus.Completed;
-                payment.TransactionId = webhookData.TransactionId;
-                payment.TransactionDate = DateTime.Parse(webhookData.TransactionDate);
-                payment.Gateway = webhookData.Gateway;
-                payment.AccountNumber = webhookData.AccountNumber;
-                payment.Content = webhookData.Content;
-                payment.UpdatedAt = DateTime.UtcNow;
-
-                // 4. Activate Subscription
-                var newSub = new UserPlanSubscriptionEntity
-                {
-                    UserId = payment.UserId,
-                    SubscriptionPlanId = payment.SubscriptionPlanId,
-                    StartDate = DateTime.UtcNow,
-                    EndDate = DateTime.UtcNow.AddDays(30) // Default 30 days
-                };
-
-                _context.UserPlanSubscriptions.Add(newSub);
-
-                await _context.SaveChangesAsync();
-
-                return true;
+                _logger.LogWarning("No payment found for code: {Code}", contentData);
+                throw new BadRequestException("Payment not found");
             }
-            catch (Exception ex)
+
+            if (payment.Status == PaymentStatus.Completed)
             {
-                _logger.LogError(ex, "Error processing webhook");
-                throw new Exception("Internal error processing webhook");
+                _logger.LogInformation("Payment already completed for OrderCode: {OrderCode}", payment.OrderCode);
+                return; // Idempotent: already processed
             }
+
+            // 2. Validate Amount
+            if (payment.Amount != webhookData.Amount)
+            {
+                _logger.LogWarning("Amount mismatch. Expected {Exp}, Got {Got}", payment.Amount, webhookData.Amount);
+                throw new BadRequestException($"Amount mismatch. Expected {payment.Amount}, got {webhookData.Amount}");
+            }
+
+            // 3. Mark as Completed
+            payment.Status = PaymentStatus.Completed;
+            payment.TransactionId = webhookData.TransactionId;
+            payment.TransactionDate = DateTime.SpecifyKind(DateTime.Parse(webhookData.TransactionDate), DateTimeKind.Utc);
+            payment.Gateway = webhookData.Gateway;
+            payment.AccountNumber = webhookData.AccountNumber;
+            payment.Content = webhookData.Content;
+            payment.UpdatedAt = DateTime.UtcNow;
+
+            // 4. Activate Subscription
+            var newSub = new UserPlanSubscriptionEntity
+            {
+                UserId = payment.UserId,
+                SubscriptionPlanId = payment.SubscriptionPlanId,
+                StartDate = DateTime.UtcNow,
+                EndDate = DateTime.UtcNow.AddDays(30) // Default 30 days
+            };
+
+            _context.UserPlanSubscriptions.Add(newSub);
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Payment completed successfully for OrderCode: {OrderCode}, TransactionId: {TransactionId}",
+                payment.OrderCode, webhookData.TransactionId);
         }
+
 
         private string GenerateQRCodeUrl(string bank, string accNo, string accName, decimal amount, string content)
         {

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using TravelTechApi.Common;
+using TravelTechApi.Common.Exceptions;
 using TravelTechApi.Common.Settings;
 using TravelTechApi.DTOs.Payment;
 using TravelTechApi.Services.Payment;
@@ -35,11 +37,28 @@ namespace TravelTechApi.Controllers
             }
 
             // Webhook endpoint should return 200 quickly to acknowledge receipt
-            var result = await _paymentService.ProcessWebhookAsync(dto);
+            try
+            {
+                await _paymentService.ProcessWebhookAsync(dto);
 
-            if (result) return Ok(new { success = true });
-
-            return BadRequest(new { success = false, message = "Failed to process webhook" });
+                _logger.LogInformation("Webhook processed successfully for transaction: {TransactionId}", dto.TransactionId);
+                return Ok(new { success = true, message = "Payment processed successfully" });
+            }
+            catch (BadRequestException ex)
+            {
+                // Business logic errors (payment not found, amount mismatch, etc.)
+                _logger.LogWarning(ex, "Webhook validation failed: {Message}", ex.Message);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Unexpected errors (database issues, etc.)
+                _logger.LogError(ex, "Unexpected error processing webhook for transaction: {TransactionId}", dto.TransactionId);
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    new { success = false, message = "Internal server error processing payment" }
+                );
+            }
         }
     }
 }
