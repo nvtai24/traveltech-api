@@ -83,15 +83,15 @@ namespace TravelTechApi.Common.Extensions
             return services;
         }
 
-        public static IServiceCollection AddJsonConverter(this IServiceCollection services)
-        {
-            services.AddControllers()
-            .AddJsonOptions(o =>
-            {
-                o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            });
-            return services;
-        }
+        // public static IServiceCollection AddJsonConverter(this IServiceCollection services)
+        // {
+        //     services.AddControllers()
+        //     .AddJsonOptions(o =>
+        //     {
+        //         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        //     });
+        //     return services;
+        // }
 
 
     }

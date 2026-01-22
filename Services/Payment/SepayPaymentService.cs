@@ -198,7 +198,7 @@ namespace TravelTechApi.Services.Payment
                 payment.Status = PaymentStatus.Completed;
                 payment.TransactionId = webhookData.TransactionId;
                 payment.TransactionDate = webhookData.TransactionDate;
-                payment.BankCode = webhookData.BankCode;
+                // payment.BankCode = webhookData.BankCode;
                 payment.UpdatedAt = DateTime.UtcNow;
 
                 // 4. Activate Subscription
