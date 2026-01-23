@@ -13,5 +13,6 @@ namespace TravelTechApi.Services.Auth
         Task RevokeTokenAsync(string userId);
         Task<bool> ConfirmEmailAsync(string userId, string token);
         Task ResendConfirmationEmailAsync(string email);
+        Task<LoginResponse> GoogleLoginAsync(GoogleLoginRequest request);
     }
 }

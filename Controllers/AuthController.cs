@@ -57,6 +57,17 @@ namespace TravelTechApi.Controllers
         }
 
         /// <summary>
+        /// Login with Google
+        /// </summary>
+        [HttpPost("google")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest googleLoginRequest)
+        {
+            var result = await _authService.GoogleLoginAsync(googleLoginRequest);
+            _logger.LogInformation("Google login successful for email: {Email}", result.User.Email);
+            return this.Success(result, "Google login successful");
+        }
+
+        /// <summary>
         /// Refresh access token using refresh token
         /// </summary>
         [HttpPost("refresh-token")]

@@ -63,7 +63,7 @@ namespace TravelTechApi.Controllers
 
             var userDto = _mapper.Map<UserResponse>(user);
 
-            var currentPlan = await _userPlanSubscriptionService.GetCurrentPlanAsync(userId);
+            var currentPlan = await _userPlanSubscriptionService.GetCurrentPlanAsync(userId!);
             userDto.SubscriptionPlan = currentPlan.Name;
 
             // Roles are not loaded in this simple query usually, unless Included.
@@ -104,6 +104,9 @@ namespace TravelTechApi.Controllers
             {
                 return this.NotFound("User not found");
             }
+
+
+
 
             bool isUpdated = false;
 
@@ -166,6 +169,9 @@ namespace TravelTechApi.Controllers
             }
 
             var response = _mapper.Map<UserResponse>(user);
+
+            var currentPlan = await _userPlanSubscriptionService.GetCurrentPlanAsync(userId!);
+            response.SubscriptionPlan = currentPlan.Name;
             // Handle role mapping if not covered by mapper for this instance (standard UserResponse usually has it)
             // But Map<UserResponse>(user) might miss Roles if they are not loaded or if logic is complex. 
             // UserResponse.Roles is List<string>. 
@@ -173,6 +179,8 @@ namespace TravelTechApi.Controllers
             // Let's ensure roles are preserved if the client needs them, but usually Profile update just returns user info.
             var roles = await _userManager.GetRolesAsync(user);
             response.Roles = roles.ToList();
+
+
 
             return this.Success(response, "Profile updated successfully");
         }

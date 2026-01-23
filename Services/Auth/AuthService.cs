@@ -13,6 +13,7 @@ using TravelTechApi.DTOs.Auth;
 using TravelTechApi.Entities;
 using TravelTechApi.Services.Email;
 using TravelTechApi.Services.UserPlanSubscription;
+using Google.Apis.Auth;
 
 namespace TravelTechApi.Services.Auth
 {
@@ -26,6 +27,7 @@ namespace TravelTechApi.Services.Auth
         private readonly ILogger<AuthService> _logger;
         private readonly IEmailService _emailService;
         private readonly IUserPlanSubscriptionService _userPlanSubscriptionService;
+        private readonly GoogleAuthSettings _googleAuthSettings;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
@@ -35,7 +37,8 @@ namespace TravelTechApi.Services.Auth
             IMapper mapper,
             ILogger<AuthService> logger,
             IEmailService emailService,
-            IUserPlanSubscriptionService userPlanSubscriptionService)
+            IUserPlanSubscriptionService userPlanSubscriptionService,
+            IOptions<GoogleAuthSettings> googleAuthSettings)
         {
             _userManager = userManager;
             _context = context;
@@ -45,6 +48,7 @@ namespace TravelTechApi.Services.Auth
             _logger = logger;
             _emailService = emailService;
             _userPlanSubscriptionService = userPlanSubscriptionService;
+            _googleAuthSettings = googleAuthSettings.Value;
         }
 
         public async Task<RegisterResponse> RegisterAsync(RegisterRequest registerDto)
@@ -160,6 +164,84 @@ namespace TravelTechApi.Services.Auth
             }
 
             _logger.LogInformation("Login successful for user: {UserId}, Email: {Email}", user.Id, user.Email);
+            return await GenerateAuthResponse(user);
+        }
+
+        public async Task<LoginResponse> GoogleLoginAsync(GoogleLoginRequest request)
+        {
+            _logger.LogInformation("Google login attempt");
+
+            GoogleJsonWebSignature.Payload payload;
+            try
+            {
+                var settings = new GoogleJsonWebSignature.ValidationSettings()
+                {
+                    Audience = new List<string>() { _googleAuthSettings.ClientId }
+                };
+                payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
+            }
+            catch (InvalidJwtException ex)
+            {
+                _logger.LogWarning(ex, "Invalid Google ID token");
+                throw new BadRequestException("Invalid Google ID token");
+            }
+
+            var user = await _userManager.FindByEmailAsync(payload.Email);
+            if (user == null)
+            {
+                _logger.LogInformation("User not found, registering new user from Google login: {Email}", payload.Email);
+
+                user = new ApplicationUser
+                {
+                    UserName = payload.Email,
+                    Email = payload.Email,
+                    FirstName = payload.GivenName,
+                    LastName = payload.FamilyName,
+                    EmailConfirmed = true
+                };
+
+                var result = await _userManager.CreateAsync(user);
+                if (!result.Succeeded)
+                {
+                    _logger.LogError("User creation failed for {Email}. Errors: {Errors}",
+                        payload.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
+                    throw new BadRequestException("Failed to create user from Google login");
+                }
+
+                await _userManager.AddToRoleAsync(user, AppRoles.User);
+
+                // Assign basic plan
+                var basicPlan = await _context.SubscriptionPlans
+                    .FirstOrDefaultAsync(p => p.Name == "Basic");
+
+                if (basicPlan != null)
+                {
+                    var subscription = new Entities.UserPlanSubscription
+                    {
+                        UserId = user.Id,
+                        SubscriptionPlanId = basicPlan.Id,
+                        StartDate = DateTime.UtcNow,
+                        EndDate = DateTime.UtcNow.AddDays(100_000) // free plan
+                    };
+
+                    await _context.UserPlanSubscriptions.AddAsync(subscription);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            else
+            {
+                // Update avatar if missing (Logic to be implemented if ExternalAvatarUrl is added)
+                // for now, we rely on Cloudinary Avatar or manually updated profile
+
+                var avatarUrl = payload.Picture;
+                if (!string.IsNullOrEmpty(avatarUrl))
+                {
+                    // user.AvatarUrl = avatarUrl;
+                    // await _userManager.UpdateAsync(user);
+                }
+            }
+
+            _logger.LogInformation("Google login successful for user: {UserId}, Email: {Email}", user.Id, user.Email);
             return await GenerateAuthResponse(user);
         }
 

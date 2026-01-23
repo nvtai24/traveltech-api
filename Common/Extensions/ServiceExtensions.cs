@@ -68,6 +68,9 @@ namespace TravelTechApi.Common.Extensions
 
             services.Configure<SepaySettings>(configuration.GetSection("SepaySettings"));
 
+            // Google Auth Settings
+            services.Configure<GoogleAuthSettings>(configuration.GetSection("GoogleAuthSettings"));
+
             return services;
         }
 
