@@ -4,6 +4,9 @@ using System.Security.Claims;
 using TravelTechApi.Common.Extensions;
 using TravelTechApi.DTOs.Auth;
 using TravelTechApi.Services.Auth;
+using TravelTechApi.Data;
+using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 namespace TravelTechApi.Controllers
 {
@@ -16,11 +19,19 @@ namespace TravelTechApi.Controllers
     {
         private readonly IAuthService _authService;
         private readonly ILogger<AuthController> _logger;
+        private readonly Data.ApplicationDbContext _context;
+        private readonly AutoMapper.IMapper _mapper;
 
-        public AuthController(IAuthService authService, ILogger<AuthController> logger)
+        public AuthController(
+            IAuthService authService,
+            ILogger<AuthController> logger,
+            Data.ApplicationDbContext context,
+            AutoMapper.IMapper mapper)
         {
             _authService = authService;
             _logger = logger;
+            _context = context;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -97,33 +108,5 @@ namespace TravelTechApi.Controllers
             return this.Success("If the email exists and is not confirmed, a confirmation email has been sent.");
         }
 
-        /// <summary>
-        /// Get current user information (requires authentication)
-        /// </summary>
-        [Authorize]
-        [HttpGet("me")]
-        public IActionResult GetCurrentUser()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            var firstName = User.FindFirstValue(ClaimTypes.GivenName);
-            var lastName = User.FindFirstValue(ClaimTypes.Surname);
-            var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
-            // var gender = User.FindFirstValue("Gender");
-            // var dob = User.FindFirstValue("Dob");
-
-            var userDto = new UserResponse
-            {
-                Id = userId ?? string.Empty,
-                Email = email ?? string.Empty,
-                FirstName = firstName ?? string.Empty,
-                LastName = lastName ?? string.Empty,
-                PhoneNumber = phoneNumber ?? string.Empty
-            };
-
-            _logger.LogDebug("Retrieved current user info for: {UserId}", userId);
-
-            return this.Success(userDto, "User retrieved successfully");
-        }
     }
 }

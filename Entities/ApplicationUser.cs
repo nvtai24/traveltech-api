@@ -17,9 +17,9 @@ namespace TravelTechApi.Entities
         /// </summary>
         public string? LastName { get; set; }
 
-        // public string? Gender { get; set; }
+        public Gender? Gender { get; set; }
 
-        // public DateTime? Dob { get; set; }
+        public DateTime? Dob { get; set; }
 
         /// <summary>
         /// Date when user was created
@@ -37,6 +37,10 @@ namespace TravelTechApi.Entities
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
         public virtual ICollection<DestinationSharing> DestinationSharings { get; set; } = new List<DestinationSharing>();
+
+        public string? AvatarId { get; set; }
+
+        public virtual CloudinaryFileInfo? Avatar { get; set; }
 
         /// <summary>
         /// Navigation property for plan subscriptions

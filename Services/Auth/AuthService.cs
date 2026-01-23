@@ -134,7 +134,11 @@ namespace TravelTechApi.Services.Auth
         {
             _logger.LogInformation("Login attempt for email: {Email}", loginDto.Email);
 
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            // var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            var user = await _context.Users
+                .Include(u => u.Avatar)
+                .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+
             if (user == null)
             {
                 _logger.LogWarning("Login failed - user not found: {Email}", loginDto.Email);

@@ -70,6 +70,12 @@ namespace TravelTechApi.Data
             {
                 entity.Property(e => e.FirstName).HasMaxLength(100);
                 entity.Property(e => e.LastName).HasMaxLength(100);
+                entity.Property(e => e.Gender).HasConversion<string>();
+
+                entity.HasOne(e => e.Avatar)
+                    .WithMany()
+                    .HasForeignKey(e => e.AvatarId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             // Configure Destination

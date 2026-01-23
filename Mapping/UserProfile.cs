@@ -11,7 +11,8 @@ namespace TravelTechApi.Mapping
     {
         public UserProfile()
         {
-            CreateMap<ApplicationUser, UserResponse>();
+            CreateMap<ApplicationUser, UserResponse>()
+                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.Avatar != null ? src.Avatar.SecureUrl : string.Empty));
 
             CreateMap<RegisterRequest, ApplicationUser>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
