@@ -26,6 +26,7 @@ namespace TravelTechApi.Entities
 
         public string? Tips { get; set; }
         public string? MapUrl { get; set; }
+        public string? ImageUrl { get; set; }
         public int Order { get; set; } // Order of activities in the day
     }
 }

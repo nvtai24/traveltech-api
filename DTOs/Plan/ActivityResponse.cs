@@ -1,5 +1,3 @@
-using TravelTechApi.DTOs.Destination;
-
 namespace TravelTechApi.DTOs.Plan
 {
     public class ActivityResponse
@@ -15,6 +13,7 @@ namespace TravelTechApi.DTOs.Plan
         public decimal? PriceTo { get; set; }
         public string? Tips { get; set; }
         public string? MapUrl { get; set; }
+        public string? ImageUrl { get; set; }
         public int Order { get; set; }
     }
 }

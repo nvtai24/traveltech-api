@@ -57,7 +57,28 @@ namespace TravelTechApi.Services.AI
 
                 var messages = new List<ChatMessage>
                 {
-                    new SystemChatMessage("You are an expert travel planner specializing in Vietnam tourism. You create detailed, practical travel itineraries with accurate pricing and recommendations. You MUST respond with valid JSON only, no markdown formatting."),
+                    new SystemChatMessage(@"You are a highly experienced Vietnamese travel expert and local guide with deep knowledge of:
+- Real accommodation options and their actual pricing across all price ranges
+- Authentic local restaurants, street food vendors, and dining experiences
+- Practical transportation routes, costs, and booking methods
+- Hidden gems and popular tourist attractions with realistic time estimates
+- Cultural insights and practical travel tips for Vietnam
+
+Your responses must be:
+✓ Based on REAL places with accurate names and locations
+✓ Priced realistically according to current Vietnam market rates
+✓ Practical and achievable within the given timeframe
+✓ Culturally appropriate and locally relevant
+✓ Formatted as valid JSON only (no markdown, no code blocks, no extra text)
+✓ **Enriched with valid image URLs** for locations and foods whenever possible
+
+Quality Standards:
+- Accommodations: Suggest real hotels/hostels/homestays with accurate price ranges
+- Food: Recommend actual local dishes and restaurants appropriate to the location
+- Activities: Provide realistic time allocations (e.g., 2-3 hours for museums, 1 hour for meals)
+- Pricing: Match the user's budget level (Rẻ: <500k/day, Trung bình: 500k-1.5M/day, Cao: >1.5M/day)
+- Maps: Generate proper Google Maps search URLs for all locations
+- Images: MUST use the Bing Thumbnail format provided in requirements. Do NOT invent other URLs."),
                     new UserChatMessage(prompt)
                 };
 
@@ -100,105 +121,176 @@ namespace TravelTechApi.Services.AI
             List<string> hobbies,
             List<string> destinationNames)
         {
-            var hobbyList = hobbies.Any() ? string.Join(", ", hobbies) : "General sightseeing";
-            var destinationList = destinationNames.Any() ? string.Join(", ", destinationNames) : "No specific destinations";
-            var currentLocation = !string.IsNullOrEmpty(currentLocationName) ? currentLocationName : "Not specified";
+            var hobbyList = hobbies.Any() ? string.Join(", ", hobbies) : "Tham quan chung";
+            var destinationList = destinationNames.Any() ? string.Join(", ", destinationNames) : "Chưa có gợi ý cụ thể";
+            var currentLocation = !string.IsNullOrEmpty(currentLocationName) ? currentLocationName : "Chưa xác định";
 
-            return $@"
-Bạn là một chuyên gia lập kế hoạch du lịch tại Việt Nam. Hãy tạo một kế hoạch du lịch chi tiết với thông tin sau:
+            // Build structured prompt with clear sections
+            var contextSection = $@"## THÔNG TIN CHUYẾN ĐI
+📍 Điểm đến: {locationName}
+🚀 Xuất phát từ: {currentLocation}
+👥 Số người: {numberOfPeople} người
+📅 Thời gian: {duration} ngày
+💰 Ngân sách: {priceRange}
+🎯 Sở thích: {hobbyList}
+⭐ Điểm đến ưu tiên: {destinationList}
+📝 Ghi chú: {(string.IsNullOrEmpty(notes) ? "Không có" : notes)}";
 
-**Thông tin chuyến đi:**
-- Địa điểm đến: {locationName}
-- Điểm xuất phát: {currentLocation}
-- Số người: {numberOfPeople}
-- Mức giá: {priceRange}
-- Sở thích: {hobbyList}
-- Các điểm đến gợi ý: {destinationList}
-- Ghi chú thêm: {(string.IsNullOrEmpty(notes) ? "Không có" : notes)}
+            var requirementsSection = @"## YÊU CẦU CHI TIẾT
 
-**Yêu cầu:**
-1. Đề xuất 1-2 lựa chọn lưu trú phù hợp với mức giá
-2. Đề xuất phương tiện di chuyển từ điểm xuất phát đến địa điểm (nếu có thông tin)
-3. Lập kế hoạch chi tiết cho từng ngày bao gồm:
-   - Các hoạt động/địa điểm tham quan (ưu tiên các điểm đến gợi ý nếu có)
-   - Thời gian cho mỗi hoạt động
-   - Gợi ý món ăn cho bữa sáng, trưa, tối
-   - Khoảng giá cho mỗi hoạt động và món ăn
+### 1. Lưu trú (1-2 lựa chọn)
+- Đề xuất khách sạn/nhà nghỉ/homestay THỰC TẾ với tên và địa chỉ cụ thể
+- Giá phải phù hợp với mức ngân sách đã chọn
+- Bao gồm tiện nghi, đánh giá, và link Google Maps
+- **HÌNH ẢNH**: BẮT BUỘC sử dụng format sau để tạo link ảnh: `https://tse1.mm.bing.net/th?q={Tên Khách Sạn} + {Thành Phố}`
 
-**Format JSON trả về:**
-{{
-  ""summary"": ""Tóm tắt chuyến đi"",
+### 2. Di chuyển
+- Phương tiện từ điểm xuất phát đến điểm đến (nếu có thông tin)
+- Chi phí thực tế, thời gian di chuyển, nhà cung cấp
+- Lời khuyên đặt vé và tips hữu ích
+
+### 3. Lịch trình từng ngày
+Mỗi ngày bao gồm:
+- **Hoạt động**: Địa điểm THỰC TẾ, thời gian hợp lý.
+- **Mô tả**: Viết sâu sắc (2-3 câu), nêu bật TẠI SAO nên đến đây, không viết chung chung kiểu ""đẹp lắm"".
+- **Tips**: Mẹo của người bản địa (góc chụp ảnh, giờ đi tránh đông, lưu ý trang phục...).
+- **Ẩm thực**: Món ăn ĐẶC TRƯNG, review ngắn gọn về hương vị.
+- **Giá cả**: Ước tính chính xác.
+- **Maps**: Link Google Maps chuẩn.
+- **HÌNH ẢNH**: BẮT BUỘC sử dụng format sau:
+  - Cho địa điểm (Activities): `https://tse1.mm.bing.net/th?q={Từ khóa Hoạt động} + {Tên Địa Điểm} + {Thành Phố}`
+  - Cho món ăn (Food): `https://tse1.mm.bing.net/th?q={Tên Món Ăn} + {Tên Quán}`";
+
+            var constraintsSection = $@"## RÀNG BUỘC QUAN TRỌNG
+
+✓ Ưu tiên các điểm đến đã gợi ý: {destinationList}
+✓ Thời gian hoạt động phải THỰC TẾ
+✓ Giá cả phải phù hợp mức '{priceRange}':
+  - Rẻ: <500,000 VNĐ/ngày/người
+  - Trung bình: 500,000-1,500,000 VNĐ/ngày/người  
+  - Cao: >1,500,000 VNĐ/ngày/người
+✓ Tên địa điểm phải là tên THẬT
+✓ **Nội dung**: KHÔNG VIẾT NGẮN GỌN. Hãy viết như một bài blog du lịch nhỏ, đầy cảm hứng.
+✓ **Image URLs**: Format Bing Thumbnail như yêu cầu.";
+
+            var jsonFormatSection = @"## OUTPUT FORMAT (JSON ONLY)
+
+Trả về CHÍNH XÁC theo cấu trúc sau, KHÔNG thêm markdown:
+
+{
+  ""summary"": ""Tóm tắt hấp dẫn về chuyến đi (2-3 câu)"",
   ""totalEstimatedCostFrom"": 0,
   ""totalEstimatedCostTo"": 0,
   ""accommodations"": [
-    {{
+    {
       ""accommodationType"": ""Hotel/Hostel/Resort/Homestay"",
-      ""name"": ""Tên nơi lưu trú"",
-      ""address"": ""Địa chỉ"",
+      ""name"": ""Tên thật"",
+      ""address"": ""Địa chỉ đầy đủ"",
       ""pricePerNight"": 0,
-      ""description"": ""Mô tả"",
+      ""description"": ""Review chi tiết về không gian, vị trí, điểm cộng/trừ"",
       ""amenities"": [""WiFi"", ""Pool"", ""Breakfast""],
       ""rating"": 4.5,
       ""bookingUrl"": null,
-      ""contactInfo"": ""Thông tin liên hệ"",
-      ""mapUrl"": ""Link Google Maps tìm kiếm khách sạn (https://www.google.com/maps/search/?api=1&query=...)"",
+      ""contactInfo"": ""SĐT/Web"",
+      ""mapUrl"": ""url"",
       ""imageUrl"": null
-    }}
+    }
   ],
   ""transportations"": [
-    {{
-      ""transportationType"": ""Plane/Train/Bus/Taxi/Motorbike"",
-      ""route"": ""Điểm A -> Điểm B"",
+    {
+      ""transportationType"": ""Plane/Train/Bus/Taxi"",
+      ""route"": ""A -> B"",
       ""priceFrom"": 0,
       ""priceTo"": 0,
-      ""duration"": ""2 giờ"",
-      ""bookingInfo"": ""Thông tin đặt vé"",
-      ""tips"": ""Lời khuyên"",
-      ""provider"": ""Nhà cung cấp""
-    }}
+      ""duration"": ""time"",
+      ""bookingInfo"": ""Hướng dẫn đặt vé chi tiết"",
+      ""tips"": ""Lưu ý khi di chuyển"",
+      ""provider"": ""Hãng xe/bay""
+    }
   ],
   ""dailyItineraries"": [
-    {{
+    {
       ""dayNumber"": 1,
-      ""summary"": ""Tóm tắt ngày 1"",
+      ""summary"": ""Tổng quan trải nghiệm ngày 1"",
       ""activities"": [
-        {{
-          ""name"": ""Tên hoạt động"",
-          ""description"": ""Mô tả chi tiết"",
-          ""startTime"": ""09:00:00"",
-          ""endTime"": ""11:00:00"",
-          ""destinationName"": ""Tên điểm đến (nếu có)"",
+        {
+          ""name"": ""Tên địa điểm"",
+          ""description"": ""Mô tả chi tiết (30-50 từ): Lịch sử, vẻ đẹp, trải nghiệm nên thử..."",
+          ""startTime"": ""HH:mm:ss"",
+          ""endTime"": ""HH:mm:ss"",
+          ""destinationName"": ""Tên điểm đến"",
           ""priceFrom"": 0,
           ""priceTo"": 0,
-          ""tips"": ""Lời khuyên"",
-          ""mapUrl"": ""Link Google Maps tìm kiếm địa điểm"",
+          ""tips"": ""Lời khuyên cụ thể (Góc check-in, món nên gọi...)"",
+          ""mapUrl"": ""url"",
+          ""imageUrl"": null,
           ""order"": 1
-        }}
+        }
       ],
       ""foodRecommendations"": [
-        {{
-          ""mealType"": ""Breakfast/Lunch/Dinner/Snack"",
-          ""dishName"": ""Tên món ăn"",
-          ""restaurantName"": ""Tên nhà hàng"",
+        {
+          ""mealType"": ""Lunch"",
+          ""dishName"": ""Tên món"",
+          ""restaurantName"": ""Tên quán"",
           ""address"": ""Địa chỉ"",
           ""priceFrom"": 0,
           ""priceTo"": 0,
-          ""description"": ""Mô tả món ăn"",
-          ""specialtyNote"": ""Đặc sản địa phương"",
-          ""mapUrl"": ""Link Google Maps tìm kiếm nhà hàng/quán ăn"",
+          ""description"": ""Mô tả hương vị món ăn"",
+          ""specialtyNote"": ""Tại sao món này đặc biệt?"",
+          ""mapUrl"": ""url"",
           ""imageUrl"": null
-        }}
+        }
       ]
-    }}
+    }
   ]
-}}
-
-**Lưu ý quan trọng:**
-- Trả về CHÍNH XÁC theo format JSON trên, không thêm markdown hay text khác
-- Giá cả phải thực tế và phù hợp với mức giá đã chọn
-- Ưu tiên các điểm đến đã gợi ý trong danh sách destinations
-- Nếu có điểm xuất phát, tính toán chi phí và thời gian di chuyển
+}
 ";
+
+            var exampleSection = @"## VÍ DỤ THAM KHẢO
+
+Ví dụ (Đà Lạt):
+
+{
+  ""summary"": ""Hành trình 2 ngày khám phá Đà Lạt mộng mơ, từ những đồi thông reo trong gió đến hương vị cà phê phố núi đặc trưng."",
+  ""dailyItineraries"": [
+    {
+      ""dayNumber"": 1,
+      ""activities"": [
+        {
+          ""name"": ""Quảng trường Lâm Viên"",
+          ""description"": ""Biểu tượng của Đà Lạt với nụ hoa Atiso khổng lồ bằng kính rực rỡ dưới nắng. Nơi đây không chỉ là điểm check-in 'quốc dân' mà còn có không gian rộng lớn nhìn ra Hồ Xuân Hương thơ mộng, rất thích hợp để dạo bộ và hít thở không khí trong lành."",
+          ""startTime"": ""08:00:00"",
+          ""endTime"": ""09:30:00"",
+          ""tips"": ""Nên đi vào sáng sớm để tránh đông đúc và nắng gắt. Dưới hầm quảng trường có siêu thị Big C và rạp phim."",
+          ""mapUrl"": ""https://google.com..."",
+          ""imageUrl"": null
+        }
+      ],
+      ""foodRecommendations"": [
+        {
+          ""mealType"": ""Breakfast"",
+            ""dishName"": ""Bánh mì xíu mại"",
+          ""restaurantName"": ""Bánh mì xíu mại Hoàng Diệu"",
+          ""description"": ""Viên xíu mại mềm thơm, nước dùng ngọt thanh từ xương hầm, chấm cùng bánh mì giòn rụm tạo nên bữa sáng ấm bụng giữa tiết trời se lạnh."",
+          ""specialtyNote"": ""Nhớ gọi thêm ly sữa đậu nành nóng để trọn vẹn combo bữa sáng Đà Lạt."",
+          ""mapUrl"": ""https://google.com...""
+        }
+      ]
+    }
+  ]
+}
+
+Hãy viết response với độ chi tiết và giọng văn cảm xúc tương tự.";
+
+            return $@"{contextSection}
+
+{requirementsSection}
+
+{constraintsSection}
+
+{jsonFormatSection}
+
+{exampleSection}";
         }
     }
 }

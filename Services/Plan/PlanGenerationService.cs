@@ -171,7 +171,8 @@ namespace TravelTechApi.Services.Plan
                             PriceTo = act.PriceTo,
                             Tips = act.Tips,
                             Order = act.Order,
-                            MapUrl = act.MapUrl
+                            MapUrl = act.MapUrl,
+                            ImageUrl = act.ImageUrl
                         });
                     }
 
@@ -372,6 +373,7 @@ namespace TravelTechApi.Services.Plan
             public string? Tips { get; set; }
             public int Order { get; set; }
             public string? MapUrl { get; set; }
+            public string? ImageUrl { get; set; }
         }
 
         private class AIFoodRecommendation
