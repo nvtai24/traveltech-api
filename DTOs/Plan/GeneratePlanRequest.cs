@@ -14,7 +14,7 @@ namespace TravelTechApi.DTOs.Plan
         public int NumberOfPeople { get; set; }
 
         [Required]
-        [Range(1, 7)]
+        [Range(1, 6)]
         public int Duration { get; set; }
 
         [Required]
