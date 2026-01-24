@@ -28,7 +28,7 @@ namespace TravelTechApi.Controllers
             // dto.PaymentMethod = Entities.PaymentMethod.BankTransfer; // Force bank transfer for now
             var result = await _paymentService.CreatePaymentOrderAsync(userId, dto);
 
-            return this.Success(result, "Payment order created successfully");
+            return this.Created(result, "Payment order created successfully");
         }
 
         [HttpGet("{id}")]

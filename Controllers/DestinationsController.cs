@@ -124,7 +124,7 @@ namespace TravelTechApi.Controllers
 
                 _logger.LogInformation("Destination sharing created successfully for destination {DestinationId}", id);
 
-                return this.Success(sharing, "Destination sharing created successfully");
+                return this.Created(sharing, "Destination sharing created successfully");
             }
             catch (ArgumentException ex)
             {
@@ -184,7 +184,7 @@ namespace TravelTechApi.Controllers
 
                 _logger.LogInformation("Destination created successfully with id {DestinationId}", destination.Id);
 
-                return this.Success(destination, "Destination created successfully");
+                return this.Created(destination, "Destination created successfully");
             }
             catch (ArgumentException ex)
             {
