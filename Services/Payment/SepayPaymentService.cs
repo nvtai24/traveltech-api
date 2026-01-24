@@ -218,6 +218,14 @@ namespace TravelTechApi.Services.Payment
             }
         }
 
+        public async Task<bool> IsOrderPaidAsync(string orderCode)
+        {
+            var payment = await _context.PaymentTransactions
+                .FirstOrDefaultAsync(p => p.OrderCode == orderCode);
+
+            return payment != null && payment.Status == PaymentStatus.Completed;
+        }
+
         public async Task ProcessWebhookAsync(SepayWebhookRequest webhookData)
         {
 

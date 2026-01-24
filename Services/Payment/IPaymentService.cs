@@ -8,6 +8,7 @@ namespace TravelTechApi.Services.Payment
         Task<PaymentOrderResponse> CreatePaymentOrderAsync(string userId, CreatePaymentRequest dto);
         Task<PaymentTransactionResponse> GetPaymentByIdAsync(Guid paymentId, string userId);
         Task<List<PaymentTransactionResponse>> GetUserPaymentHistoryAsync(string userId);
+        Task<bool> IsOrderPaidAsync(string orderCode);
         Task ProcessWebhookAsync(SepayWebhookRequest webhookData);
     }
 }

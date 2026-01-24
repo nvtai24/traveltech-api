@@ -51,5 +51,12 @@ namespace TravelTechApi.Controllers
             var result = await _paymentService.GetUserPaymentHistoryAsync(userId);
             return this.Success(result, "Payment history retrieved successfully");
         }
+
+        [HttpGet("check-status/{orderCode}")]
+        public async Task<IActionResult> CheckStatus(string orderCode)
+        {
+            var isPaid = await _paymentService.IsOrderPaidAsync(orderCode);
+            return this.Success(new { isPaid }, "Payment status checked successfully");
+        }
     }
 }
