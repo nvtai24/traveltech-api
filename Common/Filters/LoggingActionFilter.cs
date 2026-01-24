@@ -44,8 +44,15 @@ public class LoggingActionFilter : IActionFilter
 
     public void OnActionExecuted(ActionExecutedContext context)
     {
-        // // Optional: Log response info if needed
-        var statusCode = context.HttpContext.Response.StatusCode;
-        _logger.LogInformation($"API Response - Status: {statusCode}");
+        if (context.Exception != null)
+        {
+            _logger.LogWarning($"API Response - Failed with Exception: {context.Exception.Message}");
+        }
+        else
+        {
+            // // Optional: Log response info if needed
+            var statusCode = context.HttpContext.Response.StatusCode;
+            _logger.LogInformation($"API Response - Status: {statusCode}");
+        }
     }
 }
