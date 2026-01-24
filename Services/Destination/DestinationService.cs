@@ -67,7 +67,7 @@ namespace TravelTechApi.Services.Destination
             return _mapper.Map<IEnumerable<DestinationResponse>>(destinations);
         }
 
-        public async Task<PagedResult<DestinationResponse>> GetAllDestinationsAdminAsync(int page, int pageSize, string? keyword)
+        public async Task<PagedResult<DestinationAdminResponse>> GetAllDestinationsAdminAsync(int page, int pageSize, string? keyword)
         {
             _logger.LogInformation("Getting all destinations for admin - page {Page}, keyword {Keyword}", page, keyword);
 
@@ -96,9 +96,21 @@ namespace TravelTechApi.Services.Destination
                 .Take(pageSize)
                 .ToListAsync();
 
-            var dtos = _mapper.Map<IEnumerable<DestinationResponse>>(destinations);
+            var dtos = _mapper.Map<IEnumerable<DestinationAdminResponse>>(destinations);
 
-            return PagedResult<DestinationResponse>.Create(dtos, totalCount, page, pageSize);
+            return PagedResult<DestinationAdminResponse>.Create(dtos, totalCount, page, pageSize);
+        }
+
+        public async Task<DestinationDetailsAdminResponse?> GetDestinationByIdAdminAsync(int id)
+        {
+            _logger.LogInformation("Getting destination by id for admin: {DestinationId}", id);
+            var destination = await _context.Destinations
+                .Include(d => d.Location)
+                .Include(d => d.Images)
+                .Include(d => d.FAQs)
+                .FirstOrDefaultAsync(d => d.Id == id);
+
+            return destination == null ? null : _mapper.Map<DestinationDetailsAdminResponse>(destination);
         }
 
         public async Task<DestinationDetailsResponse?> GetDestinationByIdAsync(int id)

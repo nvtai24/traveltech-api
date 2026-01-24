@@ -153,6 +153,24 @@ namespace TravelTechApi.Controllers
         }
 
         /// <summary>
+        /// Get destination by id for Admin (includes extra details)
+        /// </summary>
+        [HttpGet("admin/{id}")]
+        [Authorize(Roles = AppRoles.Admin)]
+        public async Task<IActionResult> GetDestinationByIdAdmin(int id)
+        {
+            var destination = await _destinationService.GetDestinationByIdAdminAsync(id);
+
+            if (destination == null)
+            {
+                _logger.LogWarning("Destination not found for admin: {DestinationId}", id);
+                return this.NotFound($"Destination with id {id} not found");
+            }
+
+            return this.Success(destination, "Destination retrieved successfully");
+        }
+
+        /// <summary>
         /// Create a new destination (Admin only)
         /// </summary>
         [HttpPost]

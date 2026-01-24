@@ -13,6 +13,34 @@ namespace TravelTechApi.DTOs.Destination
         public string? ThumbnailUrl { get; set; } = string.Empty;
     }
 
+    public class DestinationAdminResponse
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public List<string> Tags { get; set; } = new List<string>();
+        public string? LocationName { get; set; }
+        public string? ThumbnailUrl { get; set; } = string.Empty;
+        public bool IsVisible { get; set; }
+    }
+
+    public class DestinationDetailsAdminResponse
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string History { get; set; } = string.Empty;
+        public decimal Lat { get; set; }
+        public decimal Lon { get; set; }
+        public string? VideoUrl { get; set; }
+        public List<string> Tags { get; set; } = new List<string>();
+        public string? LocationName { get; set; }
+        public List<string> ImageUrls { get; set; } = new List<string>();
+        public List<FaqDto> FAQs { get; set; } = new List<FaqDto>();
+        public bool IsVisible { get; set; }
+    }
+
     public class DestinationDetailsResponse
     {
         public int Id { get; set; }

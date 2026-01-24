@@ -9,7 +9,8 @@ namespace TravelTechApi.Services.Destination
     public interface IDestinationService
     {
         Task<IEnumerable<DestinationResponse>> GetAllDestinationsAsync(int? regionId, int? locationId, string? keyword);
-        Task<PagedResult<DestinationResponse>> GetAllDestinationsAdminAsync(int page, int pageSize, string? keyword);
+        Task<PagedResult<DestinationAdminResponse>> GetAllDestinationsAdminAsync(int page, int pageSize, string? keyword);
+        Task<DestinationDetailsAdminResponse?> GetDestinationByIdAdminAsync(int id);
         Task<DestinationDetailsResponse?> GetDestinationByIdAsync(int id);
         Task<IEnumerable<DestinationSharingResponse>> GetDestinationsSharingsAsync(int destinationId);
         Task<DestinationSharingResponse> CreateDestinationSharingAsync(int destinationId, string userId, CreateDestinationSharingRequest dto);
