@@ -7,6 +7,7 @@ namespace TravelTechApi.DTOs.Payment
     public class CreatePaymentRequest
     {
         public int SubscriptionPlanId { get; set; }
+        public string? Giftcode { get; set; }
         // public PaymentMethod PaymentMethod { get; set; }
     }
 
@@ -26,14 +27,12 @@ namespace TravelTechApi.DTOs.Payment
 
     public class SepayWebhookRequest
     {
-        [JsonPropertyName("id")]
-        public long TransactionId { get; set; }
+        public long Id { get; set; }
         public string Gateway { get; set; } = string.Empty;
         public string AccountNumber { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        [JsonPropertyName("transferAmount")]
-        public decimal Amount { get; set; }
+        public decimal TransferAmount { get; set; }
         public string TransactionDate { get; set; } = string.Empty;
     }
 
@@ -43,6 +42,8 @@ namespace TravelTechApi.DTOs.Payment
         public string OrderCode { get; set; } = string.Empty;
         public string SubscriptionPlanName { get; set; } = string.Empty;
         public decimal Amount { get; set; }
+        public decimal OriginalAmount { get; set; }
+        public string? Giftcode { get; set; }
         // public PaymentMethod PaymentMethod { get; set; }
         public PaymentStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }

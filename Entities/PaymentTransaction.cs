@@ -10,7 +10,10 @@ namespace TravelTechApi.Entities
         public virtual ApplicationUser User { get; set; } = null!;
         public int SubscriptionPlanId { get; set; }
         public virtual SubscriptionPlan SubscriptionPlan { get; set; } = null!;
+        public int? GiftcodeId { get; set; }
+        public virtual Giftcode? Giftcode { get; set; }
         public decimal Amount { get; set; }
+        public decimal OriginalAmount { get; set; }
         // public PaymentMethod PaymentMethod { get; set; }
         public PaymentStatus Status { get; set; }
 

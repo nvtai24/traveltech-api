@@ -11,5 +11,6 @@ namespace TravelTechApi.Services.Giftcode
         Task<GiftcodeDto?> UpdateGiftcodeAsync(int id, UpdateGiftcodeDto dto);
         Task<bool> DeleteGiftcodeAsync(int id);
         Task<bool> ValidateGiftcodeAsync(string code);
+        Task IncrementUsageAsync(int id);
     }
 }

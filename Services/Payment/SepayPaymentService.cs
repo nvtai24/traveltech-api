@@ -7,6 +7,7 @@ using TravelTechApi.Common.Settings;
 using TravelTechApi.Data;
 using TravelTechApi.DTOs.Payment;
 using TravelTechApi.Entities;
+using TravelTechApi.Services.Giftcode;
 using UserPlanSubscriptionEntity = TravelTechApi.Entities.UserPlanSubscription;
 
 namespace TravelTechApi.Services.Payment
@@ -16,17 +17,20 @@ namespace TravelTechApi.Services.Payment
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly SepaySettings _sepaySettings;
+        private readonly IGiftcodeService _giftcodeService;
         private readonly ILogger<SepayPaymentService> _logger;
 
         public SepayPaymentService(
             ApplicationDbContext context,
             IMapper mapper,
             IOptions<SepaySettings> sepaySettings,
+            IGiftcodeService giftcodeService,
             ILogger<SepayPaymentService> logger)
         {
             _context = context;
             _mapper = mapper;
             _sepaySettings = sepaySettings.Value;
+            _giftcodeService = giftcodeService;
             _logger = logger;
         }
 
@@ -46,30 +50,79 @@ namespace TravelTechApi.Services.Payment
                 var shortUserId = userId.Length > 8 ? userId.Substring(0, 8) : userId;
                 var orderCode = $"PLAN{dto.SubscriptionPlanId}U{shortUserId}T{timestamp}";
 
+                // Calculate amount
+                decimal amount = plan.Price;
+                decimal originalAmount = plan.Price;
+                int? giftcodeId = null;
+
+                // Apply Giftcode
+                if (!string.IsNullOrEmpty(dto.Giftcode))
+                {
+                    var isValid = await _giftcodeService.ValidateGiftcodeAsync(dto.Giftcode);
+                    if (isValid)
+                    {
+                        var giftcode = await _giftcodeService.GetGiftcodeByCodeAsync(dto.Giftcode);
+                        if (giftcode != null)
+                        {
+                            amount -= giftcode.DiscountAmount;
+                            if (amount < 0) amount = 0;
+                            giftcodeId = giftcode.Id;
+                        }
+                    }
+                }
+
                 var payment = new PaymentTransaction
                 {
                     Id = Guid.NewGuid(),
                     OrderCode = orderCode,
                     UserId = userId,
                     SubscriptionPlanId = dto.SubscriptionPlanId,
-                    Amount = plan.Price,
+                    Amount = amount,
+                    OriginalAmount = originalAmount,
+                    GiftcodeId = giftcodeId,
                     // PaymentMethod = dto.PaymentMethod,
-                    Status = PaymentStatus.Pending,
+                    Status = amount <= 0 ? PaymentStatus.Completed : PaymentStatus.Pending,
                     Description = orderCode, // Important: SePay matches based on this content
                     CreatedAt = DateTime.UtcNow,
                 };
 
+                // If amount is 0, activate subscription immediately
+                if (amount <= 0)
+                {
+                    payment.UpdatedAt = DateTime.UtcNow;
+                    payment.TransactionDate = DateTime.UtcNow;
+                    payment.Content = "Free Giftcode";
+
+                    var newSub = new UserPlanSubscriptionEntity
+                    {
+                        UserId = payment.UserId,
+                        SubscriptionPlanId = payment.SubscriptionPlanId,
+                        StartDate = DateTime.UtcNow,
+                        EndDate = DateTime.UtcNow.AddDays(30)
+                    };
+                    await _context.UserPlanSubscriptions.AddAsync(newSub);
+
+                    if (giftcodeId.HasValue)
+                    {
+                        await _giftcodeService.IncrementUsageAsync(giftcodeId.Value);
+                    }
+                }
+
                 await _context.PaymentTransactions.AddAsync(payment);
                 await _context.SaveChangesAsync();
 
-                // Generate QR Code URL
-                var qrUrl = GenerateQRCodeUrl(
-                    _sepaySettings.BankCode,
-                    _sepaySettings.AccountNumber,
-                    _sepaySettings.AccountName,
-                    payment.Amount,
-                    orderCode
-                );
+                // Generate QR Code URL only if amount > 0
+                string qrUrl = string.Empty;
+                if (amount > 0)
+                {
+                    qrUrl = GenerateQRCodeUrl(
+                        _sepaySettings.BankCode,
+                        _sepaySettings.AccountNumber,
+                        _sepaySettings.AccountName,
+                        payment.Amount,
+                        orderCode
+                    );
+                }
 
                 var response = new PaymentOrderResponse
                 {
@@ -100,6 +153,7 @@ namespace TravelTechApi.Services.Payment
             {
                 var payment = await _context.PaymentTransactions
                     .Include(p => p.SubscriptionPlan)
+                    .Include(p => p.Giftcode)
                     .FirstOrDefaultAsync(p => p.Id == paymentId && p.UserId == userId);
 
                 if (payment == null)
@@ -113,12 +167,13 @@ namespace TravelTechApi.Services.Payment
                     OrderCode = payment.OrderCode,
                     SubscriptionPlanName = payment.SubscriptionPlan.Name,
                     Amount = payment.Amount,
+                    OriginalAmount = payment.OriginalAmount,
+                    Giftcode = payment.Giftcode?.Code,
                     // PaymentMethod = payment.PaymentMethod,
                     Status = payment.Status,
                     CreatedAt = payment.CreatedAt,
                     TransactionDate = payment.TransactionDate
-                }
-                ;
+                };
 
                 return dto;
             }
@@ -135,6 +190,7 @@ namespace TravelTechApi.Services.Payment
             {
                 var payments = await _context.PaymentTransactions
                     .Include(p => p.SubscriptionPlan)
+                    .Include(p => p.Giftcode)
                     .Where(p => p.UserId == userId)
                     .OrderByDescending(p => p.CreatedAt)
                     .ToListAsync();
@@ -145,6 +201,8 @@ namespace TravelTechApi.Services.Payment
                     OrderCode = p.OrderCode,
                     SubscriptionPlanName = p.SubscriptionPlan.Name,
                     Amount = p.Amount,
+                    OriginalAmount = p.OriginalAmount,
+                    Giftcode = p.Giftcode?.Code,
                     // PaymentMethod = p.PaymentMethod,
                     Status = p.Status,
                     CreatedAt = p.CreatedAt,
@@ -186,20 +244,21 @@ namespace TravelTechApi.Services.Payment
             }
 
             // 2. Validate Amount
-            if (payment.Amount != webhookData.Amount)
+            if (payment.Amount != webhookData.TransferAmount)
             {
-                _logger.LogWarning("Amount mismatch. Expected {Exp}, Got {Got}", payment.Amount, webhookData.Amount);
-                throw new BadRequestException($"Amount mismatch. Expected {payment.Amount}, got {webhookData.Amount}");
+                _logger.LogWarning("Amount mismatch. Expected {Exp}, Got {Got}", payment.Amount, webhookData.TransferAmount);
+                throw new BadRequestException($"Amount mismatch. Expected {payment.Amount}, got {webhookData.TransferAmount}");
             }
 
             // 3. Mark as Completed
             payment.Status = PaymentStatus.Completed;
-            payment.TransactionId = webhookData.TransactionId;
+            payment.TransactionId = webhookData.Id;
             payment.TransactionDate = DateTime.SpecifyKind(DateTime.Parse(webhookData.TransactionDate), DateTimeKind.Utc);
             payment.Gateway = webhookData.Gateway;
             payment.AccountNumber = webhookData.AccountNumber;
             payment.Content = webhookData.Content;
             payment.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
 
             // 4. Activate Subscription
             var newSub = new UserPlanSubscriptionEntity
@@ -210,12 +269,18 @@ namespace TravelTechApi.Services.Payment
                 EndDate = DateTime.UtcNow.AddDays(30) // Default 30 days
             };
 
-            _context.UserPlanSubscriptions.Add(newSub);
+            await _context.UserPlanSubscriptions.AddAsync(newSub);
+
+            // 5. Increment Giftcode Usage
+            if (payment.GiftcodeId.HasValue)
+            {
+                await _giftcodeService.IncrementUsageAsync(payment.GiftcodeId.Value);
+            }
 
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("Payment completed successfully for OrderCode: {OrderCode}, TransactionId: {TransactionId}",
-                payment.OrderCode, webhookData.TransactionId);
+                payment.OrderCode, webhookData.Id);
         }
 
 

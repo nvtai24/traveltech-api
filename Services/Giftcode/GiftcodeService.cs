@@ -83,5 +83,15 @@ namespace TravelTechApi.Services.Giftcode
 
             return true;
         }
+
+        public async Task IncrementUsageAsync(int id)
+        {
+            var giftcode = await _context.Giftcodes.FindAsync(id);
+            if (giftcode != null)
+            {
+                giftcode.UsageCount++;
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

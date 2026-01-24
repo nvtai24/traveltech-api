@@ -41,7 +41,7 @@ namespace TravelTechApi.Controllers
             {
                 await _paymentService.ProcessWebhookAsync(dto);
 
-                _logger.LogInformation("Webhook processed successfully for transaction: {TransactionId}", dto.TransactionId);
+                _logger.LogInformation("Webhook processed successfully for transaction: {TransactionId}", dto.Id);
                 return Ok(new { success = true, message = "Payment processed successfully" });
             }
             catch (BadRequestException ex)
@@ -53,7 +53,7 @@ namespace TravelTechApi.Controllers
             catch (Exception ex)
             {
                 // Unexpected errors (database issues, etc.)
-                _logger.LogError(ex, "Unexpected error processing webhook for transaction: {TransactionId}", dto.TransactionId);
+                _logger.LogError(ex, "Unexpected error processing webhook for transaction: {TransactionId}", dto.Id);
                 return StatusCode(
                     StatusCodes.Status500InternalServerError,
                     new { success = false, message = "Internal server error processing payment" }
