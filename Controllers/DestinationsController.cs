@@ -235,7 +235,7 @@ namespace TravelTechApi.Controllers
         /// </summary>
         [HttpPut("{id}")]
         [Authorize(Roles = AppRoles.Admin)]
-        public async Task<IActionResult> UpdateDestination(int id, [FromBody] UpdateDestinationRequest updateDestinationRequest)
+        public async Task<IActionResult> UpdateDestination(int id, [FromForm] UpdateDestinationRequest updateDestinationRequest)
         {
             try
             {

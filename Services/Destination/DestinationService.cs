@@ -290,6 +290,8 @@ namespace TravelTechApi.Services.Destination
             destination.LocationId = dto.LocationId;
             destination.IsVisible = dto.IsVisible;
 
+
+
             // Validate location if changed
             if (destination.LocationId != dto.LocationId)
             {
@@ -298,6 +300,70 @@ namespace TravelTechApi.Services.Destination
                 {
                     throw new ArgumentException($"Location with id {dto.LocationId} not found");
                 }
+            }
+
+            // Handle existing images (sync logic)
+            if (dto.ExistingImageUrls != null)
+            {
+                // Identify images to remove (in DB but not in kept list)
+                var imagesToRemove = destination.Images
+                    .Where(img => !dto.ExistingImageUrls.Contains(img.Url) && !dto.ExistingImageUrls.Contains(img.SecureUrl))
+                    .ToList();
+
+                if (imagesToRemove.Any())
+                {
+                    _logger.LogInformation("Removing {Count} images from destination {DestinationId}", imagesToRemove.Count, id);
+
+                    // Collect PublicIds for Cloudinary deletion
+                    var publicIdsToDelete = imagesToRemove
+                        .Where(img => !string.IsNullOrEmpty(img.PublicId))
+                        .Select(img => img.PublicId)
+                        .ToList();
+
+                    if (publicIdsToDelete.Any())
+                    {
+                        await _cloudinaryService.DeleteMultipleImagesAsync(publicIdsToDelete);
+                    }
+
+                    // Remove from database/collection
+                    foreach (var img in imagesToRemove)
+                    {
+                        destination.Images.Remove(img);
+                    }
+                }
+            }
+            else
+            {
+                // If ExistingImageUrls is null, consider if we should keep all or delete all? 
+                // Usually matching frontend behavior: if they send null, maybe they didn't touch images? 
+                // Or if they send empty list, they want to delete all?
+                // For safety, let's assume if null, we don't delete anything (keep existing).
+                // If user wants to delete all, they should send valid empty list.
+            }
+            if (dto.Images != null && dto.Images.Any())
+            {
+                _logger.LogInformation("Uploading {Count} new images for destination {DestinationId}", dto.Images.Count, id);
+
+                var uploadResults = await _cloudinaryService.UploadMultipleImagesAsync(
+                    dto.Images,
+                    folder: "destinations",
+                    maxConcurrency: 10
+                );
+
+                // Process successful uploads
+                var uploadedImages = uploadResults
+                    .Where(r => r.IsSuccess && r.Result != null)
+                    .Select(r => _mapper.Map<CloudinaryFileInfo>(r.Result))
+                    .ToList();
+
+                // Append new images to existing ones
+                foreach (var image in uploadedImages)
+                {
+                    destination.Images.Add(image);
+                }
+
+                _logger.LogInformation("Successfully uploaded and added {SuccessCount}/{TotalCount} images",
+                    uploadedImages.Count, dto.Images.Count);
             }
 
             // Update FAQs if provided

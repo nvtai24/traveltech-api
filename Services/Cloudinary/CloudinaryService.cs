@@ -182,6 +182,59 @@ namespace TravelTechApi.Services.Cloudinary
             }
         }
 
+        public async Task<List<string>> DeleteMultipleImagesAsync(List<string> publicIds)
+        {
+            if (publicIds == null || !publicIds.Any())
+            {
+                return new List<string>();
+            }
+
+            try
+            {
+                var deleteParams = new DelResParams
+                {
+                    PublicIds = publicIds,
+                    ResourceType = ResourceType.Image,
+                    Invalidate = true,
+                };
+
+                var result = await _cloudinary.DeleteResourcesAsync(deleteParams);
+
+                // Assuming result.Deleted contains a dictionary of { "public_id": "status" }
+                // We return keys where status is "deleted" or similar successful status
+                // The DeleteResourcesResult might differ based on SDK version, but usually has a status map.
+
+                // For simplicity/safety if sdk result inspection is complex, we can just return the input list 
+                // if the overall operation didn't throw. But ideally we filter.
+
+                var deletedIds = new List<string>();
+                if (result.Deleted != null)
+                {
+                    foreach (var item in result.Deleted)
+                    {
+                        if (item.Value == "deleted" || item.Value == "ok")
+                        {
+                            deletedIds.Add(item.Key);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Failed to delete image {PublicId}: {Status}", item.Key, item.Value);
+                        }
+                    }
+                }
+
+                _logger.LogInformation("Batch deletion completed. Requested: {Requested}, Deleted: {Deleted}", publicIds.Count, deletedIds.Count);
+                return deletedIds;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during batch image deletion");
+                // In case of error, we might want to throw or return partial results. 
+                // throwing is safer to alert caller.
+                throw;
+            }
+        }
+
         /// <inheritdoc/>
         public Task<string> GetImageUrlAsync(string publicId, int? width = null, int? height = null)
         {

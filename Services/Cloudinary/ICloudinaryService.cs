@@ -32,6 +32,13 @@ namespace TravelTechApi.Services.Cloudinary
         Task<bool> DeleteImageAsync(string publicId);
 
         /// <summary>
+        /// Delete multiple images from Cloudinary
+        /// </summary>
+        /// <param name="publicIds">List of public IDs to delete</param>
+        /// <returns>List of public IDs that were successfully deleted</returns>
+        Task<List<string>> DeleteMultipleImagesAsync(List<string> publicIds);
+
+        /// <summary>
         /// Get a transformed image URL
         /// </summary>
         /// <param name="publicId">The public ID of the image</param>

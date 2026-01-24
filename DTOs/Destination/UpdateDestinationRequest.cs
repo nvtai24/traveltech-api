@@ -30,5 +30,9 @@ namespace TravelTechApi.DTOs.Destination
         public bool IsVisible { get; set; } = true;
 
         public List<UpdateFAQRequest>? FAQs { get; set; }
+
+        public List<IFormFile>? Images { get; set; }
+
+        public List<string>? ExistingImageUrls { get; set; }
     }
 }
