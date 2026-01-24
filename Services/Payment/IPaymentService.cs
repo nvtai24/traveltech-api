@@ -1,4 +1,5 @@
 using TravelTechApi.Common;
+using TravelTechApi.DTOs.Common;
 using TravelTechApi.DTOs.Payment;
 
 namespace TravelTechApi.Services.Payment
@@ -7,7 +8,7 @@ namespace TravelTechApi.Services.Payment
     {
         Task<PaymentOrderResponse> CreatePaymentOrderAsync(string userId, CreatePaymentRequest dto);
         Task<PaymentTransactionResponse> GetPaymentByIdAsync(Guid paymentId, string userId);
-        Task<List<PaymentTransactionResponse>> GetUserPaymentHistoryAsync(string userId);
+        Task<PagedResult<PaymentTransactionResponse>> GetUserPaymentHistoryAsync(string userId, int page, int pageSize);
         Task<bool> IsOrderPaidAsync(string orderCode);
         Task ProcessWebhookAsync(SepayWebhookRequest webhookData);
     }

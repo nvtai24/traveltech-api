@@ -21,9 +21,9 @@ namespace TravelTechApi.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _giftcodeService.GetAllGiftcodesAsync();
+            var result = await _giftcodeService.GetAllGiftcodesAsync(page, pageSize);
             return this.Success(result, "Retrieved all giftcodes successfully");
         }
 
@@ -53,7 +53,7 @@ namespace TravelTechApi.Controllers
             // If strict 201 is needed, we might need to check extensions or use standard CreatedAtAction, 
             // but user asked for "values I defined", implying the extension methods.
             // DestinationsController uses this.Success for creation too.
-            return this.Success(result, "Giftcode created successfully");
+            return this.Created(result, "Giftcode created successfully");
         }
 
         [HttpPut("{id}")]

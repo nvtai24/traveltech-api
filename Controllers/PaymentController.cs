@@ -43,12 +43,12 @@ namespace TravelTechApi.Controllers
         }
 
         [HttpGet("user")]
-        public async Task<IActionResult> GetHistory()
+        public async Task<IActionResult> GetHistory([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null) return this.Unauthorized();
 
-            var result = await _paymentService.GetUserPaymentHistoryAsync(userId);
+            var result = await _paymentService.GetUserPaymentHistoryAsync(userId, page, pageSize);
             return this.Success(result, "Payment history retrieved successfully");
         }
 

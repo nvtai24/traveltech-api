@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using TravelTechApi.Data;
+using TravelTechApi.DTOs.Common;
 using TravelTechApi.DTOs.Giftcode;
 using TravelTechApi.Entities;
 
@@ -17,10 +18,20 @@ namespace TravelTechApi.Services.Giftcode
             _mapper = mapper;
         }
 
-        public async Task<List<GiftcodeDto>> GetAllGiftcodesAsync()
+        public async Task<PagedResult<GiftcodeDto>> GetAllGiftcodesAsync(int page, int pageSize)
         {
-            var giftcodes = await _context.Giftcodes.ToListAsync();
-            return _mapper.Map<List<GiftcodeDto>>(giftcodes);
+            var query = _context.Giftcodes.AsQueryable();
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(g => g.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var dtos = _mapper.Map<List<GiftcodeDto>>(items);
+
+            return PagedResult<GiftcodeDto>.Create(dtos, totalCount, page, pageSize);
         }
 
         public async Task<GiftcodeDto?> GetGiftcodeByIdAsync(int id)

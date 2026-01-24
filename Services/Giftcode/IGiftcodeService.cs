@@ -1,10 +1,11 @@
+using TravelTechApi.DTOs.Common;
 using TravelTechApi.DTOs.Giftcode;
 
 namespace TravelTechApi.Services.Giftcode
 {
     public interface IGiftcodeService
     {
-        Task<List<GiftcodeDto>> GetAllGiftcodesAsync();
+        Task<PagedResult<GiftcodeDto>> GetAllGiftcodesAsync(int page, int pageSize);
         Task<GiftcodeDto?> GetGiftcodeByIdAsync(int id);
         Task<GiftcodeDto?> GetGiftcodeByCodeAsync(string code);
         Task<GiftcodeDto> CreateGiftcodeAsync(CreateGiftcodeDto dto);

@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using TravelTechApi.Common;
+using TravelTechApi.DTOs.Common;
 using TravelTechApi.Common.Exceptions;
 using TravelTechApi.Common.Settings;
 using TravelTechApi.Data;
@@ -184,15 +185,21 @@ namespace TravelTechApi.Services.Payment
             }
         }
 
-        public async Task<List<PaymentTransactionResponse>> GetUserPaymentHistoryAsync(string userId)
+        public async Task<PagedResult<PaymentTransactionResponse>> GetUserPaymentHistoryAsync(string userId, int page, int pageSize)
         {
             try
             {
-                var payments = await _context.PaymentTransactions
+                var query = _context.PaymentTransactions
                     .Include(p => p.SubscriptionPlan)
                     .Include(p => p.Giftcode)
                     .Where(p => p.UserId == userId)
-                    .OrderByDescending(p => p.CreatedAt)
+                    .OrderByDescending(p => p.CreatedAt);
+
+                var totalCount = await query.CountAsync();
+
+                var payments = await query
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .ToListAsync();
 
                 var dtos = payments.Select(p => new PaymentTransactionResponse
@@ -209,7 +216,7 @@ namespace TravelTechApi.Services.Payment
                     TransactionDate = p.TransactionDate
                 }).ToList();
 
-                return dtos;
+                return PagedResult<PaymentTransactionResponse>.Create(dtos, totalCount, page, pageSize);
             }
             catch (Exception ex)
             {
