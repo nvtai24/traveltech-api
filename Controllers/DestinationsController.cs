@@ -139,6 +139,20 @@ namespace TravelTechApi.Controllers
         }
 
         /// <summary>
+        /// Get all destinations for Admin (includes invisible, paginated)
+        /// </summary>
+        [HttpGet("admin")]
+        [Authorize(Roles = AppRoles.Admin)]
+        public async Task<IActionResult> GetAllDestinationsAdmin(
+            [FromQuery] string? keyword = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var pagedResult = await _destinationService.GetAllDestinationsAdminAsync(page, pageSize, keyword);
+            return this.Success(pagedResult, "All destinations retrieved successfully");
+        }
+
+        /// <summary>
         /// Create a new destination (Admin only)
         /// </summary>
         [HttpPost]

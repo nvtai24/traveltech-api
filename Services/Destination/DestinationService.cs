@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using TravelTechApi.Common.Utils;
 using TravelTechApi.Data;
+using TravelTechApi.DTOs.Common;
 using TravelTechApi.DTOs.Destination;
 using TravelTechApi.Entities;
 using TravelTechApi.Services.Cloudinary;
@@ -33,34 +34,70 @@ namespace TravelTechApi.Services.Destination
         public async Task<IEnumerable<DestinationResponse>> GetAllDestinationsAsync(int? regionId, int? locationId, string? keyword)
         {
             _logger.LogInformation("Getting destinations by region id: {RegionId}, location id: {LocationId}, keyword: {Keyword}", regionId, locationId, keyword);
-            var destinations = await _context.Destinations
+            var query = _context.Destinations
                 .Include(d => d.Location)
                 .ThenInclude(l => l.Region)
                 .Include(d => d.Images)
+                .Where(d => d.IsVisible) // Enforce visibility for public API
                 .OrderBy(d => d.Name)
-                .ToListAsync();
+                .AsQueryable();
 
             if (regionId.HasValue)
             {
-                destinations = destinations.Where(d => d.Location.RegionId == regionId.Value).ToList();
+                query = query.Where(d => d.Location.RegionId == regionId.Value);
             }
 
             if (locationId.HasValue)
             {
-                destinations = destinations.Where(d => d.LocationId == locationId.Value).ToList();
+                query = query.Where(d => d.LocationId == locationId.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 keyword = TextUtils.RemoveDiacritics(keyword).Trim();
-                destinations = destinations.Where(d => TextUtils.CheckContains(d.Name, keyword)
+                query = query.Where(d => TextUtils.CheckContains(d.Name, keyword)
                  || TextUtils.CheckContains(d.Title, keyword)
                  || TextUtils.CheckContains(d.Description, keyword)
                  || TextUtils.CheckContains(d.History, keyword)
-                 || d.Tags.Any(tag => TextUtils.CheckContains(tag, keyword))).ToList();
+                 || d.Tags.Any(tag => TextUtils.CheckContains(tag, keyword)));
             }
 
+            var destinations = await query.ToListAsync();
+
             return _mapper.Map<IEnumerable<DestinationResponse>>(destinations);
+        }
+
+        public async Task<PagedResult<DestinationResponse>> GetAllDestinationsAdminAsync(int page, int pageSize, string? keyword)
+        {
+            _logger.LogInformation("Getting all destinations for admin - page {Page}, keyword {Keyword}", page, keyword);
+
+            var query = _context.Destinations
+                .Include(d => d.Location)
+                .ThenInclude(l => l.Region)
+                .Include(d => d.Images)
+                .OrderByDescending(d => d.Id) // Newest first for admin
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                keyword = TextUtils.RemoveDiacritics(keyword).Trim();
+                query = query.Where(d => TextUtils.CheckContains(d.Name, keyword)
+                 || TextUtils.CheckContains(d.Title, keyword)
+                 || TextUtils.CheckContains(d.Description, keyword)
+                 || TextUtils.CheckContains(d.History, keyword)
+                 || d.Tags.Any(tag => TextUtils.CheckContains(tag, keyword)));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var destinations = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var dtos = _mapper.Map<IEnumerable<DestinationResponse>>(destinations);
+
+            return PagedResult<DestinationResponse>.Create(dtos, totalCount, page, pageSize);
         }
 
         public async Task<DestinationDetailsResponse?> GetDestinationByIdAsync(int id)
