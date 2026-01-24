@@ -45,6 +45,7 @@ namespace TravelTechApi.Data
 
         // Payment
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; } = null!;
+        public DbSet<Giftcode> Giftcodes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -347,6 +348,16 @@ namespace TravelTechApi.Data
                     .WithMany()
                     .HasForeignKey(e => e.SubscriptionPlanId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure Giftcode
+            builder.Entity<Giftcode>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.Property(e => e.DiscountAmount).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Description).HasMaxLength(500);
             });
         }
     }
