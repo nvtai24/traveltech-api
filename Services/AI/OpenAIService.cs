@@ -171,6 +171,8 @@ Mỗi ngày bao gồm:
   - Cao: >1,500,000 VNĐ/ngày/người
 ✓ Tên địa điểm phải là tên THẬT
 ✓ **Nội dung**: KHÔNG VIẾT NGẮN GỌN. Hãy viết như một bài blog du lịch nhỏ, đầy cảm hứng.
+✓ **Số lượng hoạt động**: BẮT BUỘC 3 hoạt động mỗi ngày.
+✓ **ĐỘ DÀI & CHI TIẾT**: KHÔNG ĐƯỢC CẮT BỚT nội dung cho các ngày cuối. Ngày 5, 6, 7... phải chi tiết như ngày 1.
 ✓ **Image URLs**: Format Bing Thumbnail như yêu cầu.";
 
             var jsonFormatSection = @"## OUTPUT FORMAT (JSON ONLY)
