@@ -464,5 +464,85 @@ namespace TravelTechApi.Services.Auth
                 User = userResponse
             };
         }
+
+        public async Task ForgotPasswordAsync(string email)
+        {
+            _logger.LogInformation("Forgot password request for email: {Email}", email);
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                // Don't reveal that user doesn't exist
+                _logger.LogWarning("Forgot password failed - user not found: {Email}", email);
+                return;
+            }
+
+            // Generate reset token
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // Send email
+            try
+            {
+                await _emailService.SendPasswordResetEmailAsync(user.Email!, user.Id, token);
+                _logger.LogInformation("Password reset email sent to: {Email}", email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send password reset email to: {Email}", email);
+                throw new BadRequestException("Failed to send password reset email");
+            }
+        }
+
+        public async Task<IdentityResult> ResetPasswordAsync(ResetPasswordRequest request)
+        {
+            _logger.LogInformation("Reset password attempt for email: {Email}", request.Email);
+
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                _logger.LogWarning("Reset password failed - user not found: {Email}", request.Email);
+                return IdentityResult.Failed(new IdentityError { Description = "User not found" });
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("Password reset successful for user: {Email}", request.Email);
+            }
+            else
+            {
+                _logger.LogWarning("Password reset failed for user: {Email}. Errors: {Errors}",
+                    request.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+
+            return result;
+        }
+
+        public async Task<IdentityResult> ChangePasswordAsync(string userId, ChangePasswordRequest request)
+        {
+            _logger.LogInformation("Change password attempt for user: {UserId}", userId);
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                _logger.LogWarning("Change password failed - user not found: {UserId}", userId);
+                return IdentityResult.Failed(new IdentityError { Description = "User not found" });
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("Password changed successful for user: {UserId}", userId);
+            }
+            else
+            {
+                _logger.LogWarning("Change password failed for user: {UserId}. Errors: {Errors}",
+                    userId, string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+
+            return result;
+        }
     }
 }

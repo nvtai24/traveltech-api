@@ -74,6 +74,57 @@ namespace TravelTechApi.Services.Email
             _logger.LogInformation("Email confirmation sent successfully to: {Email}", email);
         }
 
+        public async Task SendPasswordResetEmailAsync(string email, string userId, string token)
+        {
+            _logger.LogInformation("Sending password reset email to: {Email}", email);
+
+            var resetUrl = $"{_emailSettings.FrontendUrl}/reset-password?userId={Uri.EscapeDataString(userId)}&token={Uri.EscapeDataString(token)}";
+
+            var htmlBody = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+        .button {{ display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+        .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>🔐 Đặt lại mật khẩu</h1>
+        </div>
+        <div class='content'>
+            <h2>Yêu cầu đặt lại mật khẩu</h2>
+            <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản TravelTech của bạn.</p>
+            <p>Vui lòng nhấp vào nút bên dưới để đặt lại mật khẩu:</p>
+            
+            <div style='text-align: center;'>
+                <a href='{resetUrl}' class='button'>Đặt lại Mật khẩu</a>
+            </div>
+            
+            <p>Hoặc copy link sau vào trình duyệt:</p>
+            <p style='background: #fff; padding: 10px; border-left: 4px solid #667eea; word-break: break-all;'>{resetUrl}</p>
+            
+            <p><strong>Lưu ý:</strong> Link này sẽ hết hạn sau vài giờ.</p>
+            
+            <p>Nếu bạn không yêu cầu thay đổi mật khẩu, vui lòng bỏ qua email này. Tài khoản của bạn vẫn an toàn.</p>
+        </div>
+        <div class='footer'>
+            <p>&copy; 2026 TravelTech. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>";
+
+            await SendEmailAsync(email, "Đặt lại mật khẩu TravelTech", htmlBody);
+            _logger.LogInformation("Password reset email sent successfully to: {Email}", email);
+        }
+
         public async Task SendEmailAsync(string to, string subject, string htmlBody)
         {
             try

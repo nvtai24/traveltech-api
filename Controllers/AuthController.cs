@@ -119,5 +119,56 @@ namespace TravelTechApi.Controllers
             return this.Success("If the email exists and is not confirmed, a confirmation email has been sent.");
         }
 
+        /// <summary>
+        /// Request a password reset link
+        /// </summary>
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        {
+            await _authService.ForgotPasswordAsync(request.Email);
+            // Always return success to prevent email enumeration
+            return this.Success("If the email exists, a password reset link has been sent.");
+        }
+
+        /// <summary>
+        /// Reset password using token
+        /// </summary>
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            var result = await _authService.ResetPasswordAsync(request);
+
+            if (!result.Succeeded)
+            {
+                return this.Failed(result.Errors.Select(e => e.Description).FirstOrDefault() ?? "Failed to reset password");
+            }
+
+            return this.Success("Password reset successfully. You can now login with your new password.");
+        }
+
+        /// <summary>
+        /// Change password for logged in user
+        /// </summary>
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return this.Unauthorized("User not found");
+            }
+
+            var result = await _authService.ChangePasswordAsync(userId, request);
+
+            if (!result.Succeeded)
+            {
+                return this.Failed(result.Errors.Select(e => e.Description).FirstOrDefault() ?? "Failed to change password");
+            }
+
+            return this.Success("Password changed successfully.");
+        }
+
+
     }
 }

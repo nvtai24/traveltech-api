@@ -16,6 +16,14 @@ namespace TravelTechApi.Services.Email
         Task SendEmailConfirmationAsync(string email, string userId, string token);
 
         /// <summary>
+        /// Send password reset email
+        /// </summary>
+        /// <param name="email">User email address</param>
+        /// <param name="userId">User ID</param>
+        /// <param name="token">Reset token</param>
+        Task SendPasswordResetEmailAsync(string email, string userId, string token);
+
+        /// <summary>
         /// Send generic email
         /// </summary>
         /// <param name="to">Recipient email</param>

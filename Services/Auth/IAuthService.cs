@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using TravelTechApi.DTOs.Auth;
 
 namespace TravelTechApi.Services.Auth
@@ -14,5 +15,8 @@ namespace TravelTechApi.Services.Auth
         Task<bool> ConfirmEmailAsync(string userId, string token);
         Task ResendConfirmationEmailAsync(string email);
         Task<LoginResponse> GoogleLoginAsync(GoogleLoginRequest request);
+        Task ForgotPasswordAsync(string email);
+        Task<IdentityResult> ResetPasswordAsync(ResetPasswordRequest request);
+        Task<IdentityResult> ChangePasswordAsync(string userId, ChangePasswordRequest request);
     }
 }
