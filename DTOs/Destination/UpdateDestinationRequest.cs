@@ -1,25 +1,34 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TravelTechApi.Entities
+namespace TravelTechApi.DTOs.Destination
 {
-    public class Destination
+    public class UpdateDestinationRequest
     {
-        [Key]
-        public int Id { get; set; }
+        [Required]
         public string Name { get; set; } = string.Empty;
 
+        [Required]
         public string Title { get; set; } = string.Empty;
+
         public string Description { get; set; } = string.Empty;
+
         public string History { get; set; } = string.Empty;
+
+        [Range(-90, 90)]
         public decimal Lat { get; set; }
+
+        [Range(-180, 180)]
         public decimal Lon { get; set; }
-        public string? VideoUrl { get; set; } = string.Empty;
+
+        public string? VideoUrl { get; set; }
+
         public List<string> Tags { get; set; } = new List<string>();
+
+        [Required]
         public int LocationId { get; set; }
-        public virtual Location Location { get; set; } = null!;
-        public virtual ICollection<CloudinaryFileInfo> Images { get; set; } = new List<CloudinaryFileInfo>();
-        public virtual ICollection<FAQ> FAQs { get; set; } = new List<FAQ>();
-        public virtual ICollection<DestinationSharing> Sharings { get; set; } = new List<DestinationSharing>();
+
         public bool IsVisible { get; set; } = true;
+
+        public List<UpdateFAQRequest>? FAQs { get; set; }
     }
 }

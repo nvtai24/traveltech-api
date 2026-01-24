@@ -43,6 +43,7 @@ namespace TravelTechApi.Mapping
                 .ForMember(dest => dest.Sharings, opt => opt.Ignore());
 
             CreateMap<FaqDto, FAQ>();
+            CreateMap<UpdateFAQRequest, FAQ>();
 
 
 

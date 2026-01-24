@@ -197,5 +197,57 @@ namespace TravelTechApi.Controllers
                 return this.InternalServerError("Failed to create destination");
             }
         }
+
+        /// <summary>
+        /// Update a destination (Admin only)
+        /// </summary>
+        [HttpPut("{id}")]
+        [Authorize(Roles = AppRoles.Admin)]
+        public async Task<IActionResult> UpdateDestination(int id, [FromBody] UpdateDestinationRequest updateDestinationRequest)
+        {
+            try
+            {
+                var destination = await _destinationService.UpdateDestinationAsync(id, updateDestinationRequest);
+                _logger.LogInformation("Destination updated successfully with id {DestinationId}", id);
+                return this.Success(destination, "Destination updated successfully");
+            }
+            catch (KeyNotFoundException)
+            {
+                return this.NotFound($"Destination with id {id} not found");
+            }
+            catch (ArgumentException ex)
+            {
+                return this.BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating destination with id {DestinationId}", id);
+                return this.InternalServerError("Failed to update destination");
+            }
+        }
+
+        /// <summary>
+        /// Delete a destination (Admin only)
+        /// </summary>
+        [HttpDelete("{id}")]
+        [Authorize(Roles = AppRoles.Admin)]
+        public async Task<IActionResult> DeleteDestination(int id)
+        {
+            try
+            {
+                await _destinationService.DeleteDestinationAsync(id);
+                _logger.LogInformation("Destination deleted successfully with id {DestinationId}", id);
+                return this.Success("Destination deleted successfully");
+            }
+            catch (KeyNotFoundException)
+            {
+                return this.NotFound($"Destination with id {id} not found");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting destination with id {DestinationId}", id);
+                return this.InternalServerError("Failed to delete destination");
+            }
+        }
     }
 }

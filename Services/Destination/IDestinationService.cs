@@ -12,6 +12,7 @@ namespace TravelTechApi.Services.Destination
         Task<IEnumerable<DestinationSharingResponse>> GetDestinationsSharingsAsync(int destinationId);
         Task<DestinationSharingResponse> CreateDestinationSharingAsync(int destinationId, string userId, CreateDestinationSharingRequest dto);
         Task<DestinationDetailsResponse> CreateDestinationAsync(CreateDestinationRequest dto);
-
+        Task<DestinationDetailsResponse> UpdateDestinationAsync(int id, UpdateDestinationRequest dto);
+        Task DeleteDestinationAsync(int id);
     }
 }

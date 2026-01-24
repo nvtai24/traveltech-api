@@ -212,5 +212,96 @@ namespace TravelTechApi.Services.Destination
             return _mapper.Map<DestinationDetailsResponse>(destination);
         }
 
+        public async Task<DestinationDetailsResponse> UpdateDestinationAsync(int id, UpdateDestinationRequest dto)
+        {
+            _logger.LogInformation("Updating destination with id: {DestinationId}", id);
+
+            var destination = await _context.Destinations
+                .Include(d => d.Location)
+                .Include(d => d.Images)
+                .Include(d => d.FAQs)
+                .FirstOrDefaultAsync(d => d.Id == id);
+
+            if (destination == null)
+            {
+                _logger.LogWarning("Destination not found: {DestinationId}", id);
+                throw new KeyNotFoundException($"Destination with id {id} not found");
+            }
+
+            // Update fields
+            destination.Name = dto.Name;
+            destination.Title = dto.Title;
+            destination.Description = dto.Description;
+            destination.History = dto.History;
+            destination.Lat = dto.Lat;
+            destination.Lon = dto.Lon;
+            destination.VideoUrl = dto.VideoUrl;
+            destination.Tags = dto.Tags;
+            destination.LocationId = dto.LocationId;
+            destination.IsVisible = dto.IsVisible;
+
+            // Validate location if changed
+            if (destination.LocationId != dto.LocationId)
+            {
+                var location = await _context.Locations.FindAsync(dto.LocationId);
+                if (location == null)
+                {
+                    throw new ArgumentException($"Location with id {dto.LocationId} not found");
+                }
+            }
+
+            // Update FAQs if provided
+            if (dto.FAQs != null)
+            {
+                // Remove existing FAQs
+                _context.FAQs.RemoveRange(destination.FAQs);
+
+                // Add new FAQs
+                var newFaqs = _mapper.Map<List<FAQ>>(dto.FAQs);
+                // Ensure IDs are 0 to be treated as new
+                foreach (var faq in newFaqs)
+                {
+                    faq.Id = 0;
+                    destination.FAQs.Add(faq);
+                }
+            }
+
+            // Save changes
+            try
+            {
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Destination updated successfully: {DestinationId}", id);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await _context.Destinations.AnyAsync(e => e.Id == id))
+                {
+                    throw new KeyNotFoundException($"Destination with id {id} not found");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return _mapper.Map<DestinationDetailsResponse>(destination);
+        }
+
+        public async Task DeleteDestinationAsync(int id)
+        {
+            _logger.LogInformation("Deleting destination with id: {DestinationId}", id);
+
+            var destination = await _context.Destinations.FindAsync(id);
+            if (destination == null)
+            {
+                _logger.LogWarning("Destination not found: {DestinationId}", id);
+                throw new KeyNotFoundException($"Destination with id {id} not found");
+            }
+
+            _context.Destinations.Remove(destination);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Destination deleted successfully: {DestinationId}", id);
+        }
     }
 }
