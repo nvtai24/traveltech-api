@@ -51,6 +51,9 @@ namespace TravelTechApi.Data
         {
             base.OnModelCreating(builder);
 
+            // Enable unaccent extension for case-insensitive and accent-insensitive search
+            builder.HasPostgresExtension("unaccent");
+
             // Configure RefreshToken
             builder.Entity<RefreshToken>(entity =>
             {

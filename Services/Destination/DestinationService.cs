@@ -54,12 +54,12 @@ namespace TravelTechApi.Services.Destination
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
-                keyword = TextUtils.RemoveDiacritics(keyword).Trim();
-                query = query.Where(d => TextUtils.CheckContains(d.Name, keyword)
-                 || TextUtils.CheckContains(d.Title, keyword)
-                 || TextUtils.CheckContains(d.Description, keyword)
-                 || TextUtils.CheckContains(d.History, keyword)
-                 || d.Tags.Any(tag => TextUtils.CheckContains(tag, keyword)));
+                keyword = keyword.Trim();
+                query = query.Where(d => EF.Functions.ILike(EF.Functions.Unaccent(d.Name), "%" + EF.Functions.Unaccent(keyword) + "%")
+                 || EF.Functions.ILike(EF.Functions.Unaccent(d.Title), "%" + EF.Functions.Unaccent(keyword) + "%")
+                 || EF.Functions.ILike(EF.Functions.Unaccent(d.Description), "%" + EF.Functions.Unaccent(keyword) + "%")
+                 || EF.Functions.ILike(EF.Functions.Unaccent(d.History), "%" + EF.Functions.Unaccent(keyword) + "%")
+                 || d.Tags.Any(tag => EF.Functions.ILike(EF.Functions.Unaccent(tag), "%" + EF.Functions.Unaccent(keyword) + "%")));
             }
 
             var destinations = await query.ToListAsync();
@@ -80,13 +80,14 @@ namespace TravelTechApi.Services.Destination
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
-                keyword = TextUtils.RemoveDiacritics(keyword).Trim();
-                query = query.Where(d => TextUtils.CheckContains(d.Name, keyword)
-                 || TextUtils.CheckContains(d.Title, keyword)
-                 || TextUtils.CheckContains(d.Description, keyword)
-                 || TextUtils.CheckContains(d.History, keyword)
-                 || d.Tags.Any(tag => TextUtils.CheckContains(tag, keyword)));
+                keyword = keyword.Trim();
+                query = query.Where(d => EF.Functions.ILike(EF.Functions.Unaccent(d.Name), "%" + EF.Functions.Unaccent(keyword) + "%")
+                 || EF.Functions.ILike(EF.Functions.Unaccent(d.Title), "%" + EF.Functions.Unaccent(keyword) + "%")
+                 || EF.Functions.ILike(EF.Functions.Unaccent(d.Description), "%" + EF.Functions.Unaccent(keyword) + "%")
+                 || EF.Functions.ILike(EF.Functions.Unaccent(d.History), "%" + EF.Functions.Unaccent(keyword) + "%")
+                 || d.Tags.Any(tag => EF.Functions.ILike(EF.Functions.Unaccent(tag), "%" + EF.Functions.Unaccent(keyword) + "%")));
             }
+
 
             var totalCount = await query.CountAsync();
 
