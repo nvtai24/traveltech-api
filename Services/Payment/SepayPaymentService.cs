@@ -59,7 +59,14 @@ namespace TravelTechApi.Services.Payment
                         var giftcode = await _giftcodeService.GetGiftcodeByCodeAsync(dto.Giftcode);
                         if (giftcode != null)
                         {
-                            amount -= giftcode.DiscountAmount;
+                            var discountAmount = amount * giftcode.DiscountPercentage / 100;
+
+                            if (discountAmount > giftcode.MaxDiscountAmount)
+                            {
+                                discountAmount = giftcode.MaxDiscountAmount;
+                            }
+
+                            amount -= discountAmount;
                             if (amount < 0) amount = 0;
                             giftcodeId = giftcode.Id;
                         }

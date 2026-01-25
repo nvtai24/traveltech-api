@@ -4,7 +4,8 @@ namespace TravelTechApi.DTOs.Giftcode
     {
         public int Id { get; set; }
         public string Code { get; set; } = string.Empty;
-        public decimal DiscountAmount { get; set; }
+        public int DiscountPercentage { get; set; }
+        public decimal MaxDiscountAmount { get; set; }
         public string Description { get; set; } = string.Empty;
         public DateTime ValidFrom { get; set; }
         public DateTime ValidTo { get; set; }

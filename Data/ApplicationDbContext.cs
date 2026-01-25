@@ -359,7 +359,8 @@ namespace TravelTechApi.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
                 entity.HasIndex(e => e.Code).IsUnique();
-                entity.Property(e => e.DiscountAmount).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(e => e.MaximumDiscountAmount).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(e => e.DiscountPercentage).IsRequired();
                 entity.Property(e => e.Description).HasMaxLength(500);
             });
         }

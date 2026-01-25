@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace TravelTechApi.Entities
 {
     public class Giftcode
@@ -6,7 +8,10 @@ namespace TravelTechApi.Entities
 
         public string Code { get; set; } = string.Empty;
 
-        public decimal DiscountAmount { get; set; }
+        [Range(0, 100)]
+        public int DiscountPercentage { get; set; }
+
+        public decimal MaximumDiscountAmount { get; set; }
 
         public string Description { get; set; } = string.Empty;
 
