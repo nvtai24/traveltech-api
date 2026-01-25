@@ -34,6 +34,19 @@ namespace TravelTechApi
             app.UseCors("DefaultCorsPolicy");
             app.UseAuthentication();
             app.UseAuthorization();
+
+
+            // For case: app behind reverse proxy/load balancer (Nginx, ...)
+            // app.UseForwardedHeaders(new ForwardedHeadersOptions
+            // {
+            //     ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor
+            //                        | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+            // });
+
+
+            // Custom Middlewares
+            // app.UseMiddleware<TravelTechApi.Common.Middlewares.RateLimitMiddleware>();
+
             app.MapControllers();
 
             // Seed roles and database with initial data

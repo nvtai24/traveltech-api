@@ -18,22 +18,38 @@ namespace TravelTechApi.Services.Destination
         private readonly IMapper _mapper;
         private readonly ILogger<DestinationService> _logger;
         private readonly ICloudinaryService _cloudinaryService;
+        private readonly StackExchange.Redis.IConnectionMultiplexer _redis;
 
         public DestinationService(
             ApplicationDbContext context,
             IMapper mapper,
             ILogger<DestinationService> logger,
-            ICloudinaryService cloudinaryService)
+            ICloudinaryService cloudinaryService,
+            StackExchange.Redis.IConnectionMultiplexer redis)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
             _cloudinaryService = cloudinaryService;
+            _redis = redis;
         }
 
         public async Task<IEnumerable<DestinationResponse>> GetAllDestinationsAsync(int? regionId, int? locationId, string? keyword)
         {
             _logger.LogInformation("Getting destinations by region id: {RegionId}, location id: {LocationId}, keyword: {Keyword}", regionId, locationId, keyword);
+
+            var db = _redis.GetDatabase();
+            var version = await GetCacheVersion();
+            string cacheKey = $"destinations:all:v{version}:{regionId}:{locationId}:{keyword}";
+
+            // Try get from cache
+            var cachedData = await db.StringGetAsync(cacheKey);
+            if (!cachedData.IsNullOrEmpty)
+            {
+                _logger.LogInformation("Cache hit for key: {Key}", cacheKey);
+                return System.Text.Json.JsonSerializer.Deserialize<IEnumerable<DestinationResponse>>(cachedData!)!;
+            }
+
             var query = _context.Destinations
                 .Include(d => d.Location)
                 .ThenInclude(l => l.Region)
@@ -63,8 +79,49 @@ namespace TravelTechApi.Services.Destination
             }
 
             var destinations = await query.ToListAsync();
+            var result = _mapper.Map<IEnumerable<DestinationResponse>>(destinations);
 
-            return _mapper.Map<IEnumerable<DestinationResponse>>(destinations);
+            // Set cache
+            await db.StringSetAsync(cacheKey,
+                System.Text.Json.JsonSerializer.Serialize(result),
+                TimeSpan.FromMinutes(30));
+
+            return result;
+        }
+
+        private async Task InvalidateDestinationsCache()
+        {
+            var db = _redis.GetDatabase();
+            // Invalidate all destination keys using a pattern requires SCAN, which is expensive.
+            // For now, simpler approach: Use a known set or just accept expiration.
+            // Better approach for production: Store dependencies or use tagging if supported (not out of box in Redis).
+            // Or simplest: Just delete the most common keys if predictable, or use a shorter cache time.
+
+            // Alternative: Find keys matching pattern. Note: Keys usually blocks, SCAN avoids blocking but needs loop.
+            // Since we can't easily retrieve all keys to delete, we'll rely on short expiration (30m) 
+            // OR if we want to be proactive, we can delete the 'all items' cache if that's the main one.
+
+            // But wait, the key depends on filters. 
+            // A common strategy without advanced tagging:
+            // 1. Maintain a "version" key for destinations.
+            // 2. Append version to all destination cache keys.
+            // 3. Increment version on any update.
+            // Let's implement that? It's robust.
+
+            // Actually, for this specific request, let's keep it simple first.
+            // If the user didn't ask for a complex versioning system, maybe just basic caching.
+            // But invalidation is key.
+            // Let's increment a 'destinations:version' key.
+
+            await db.StringIncrementAsync("destinations:version");
+        }
+
+        // Helper to get current version
+        private async Task<string> GetCacheVersion()
+        {
+            var db = _redis.GetDatabase();
+            var val = await db.StringGetAsync("destinations:version");
+            return val.HasValue ? val.ToString() : "0";
         }
 
         public async Task<PagedResult<DestinationAdminResponse>> GetAllDestinationsAdminAsync(int page, int pageSize, string? keyword)
@@ -259,6 +316,8 @@ namespace TravelTechApi.Services.Destination
             await _context.Entry(destination).Collection(d => d.Images).LoadAsync();
             await _context.Entry(destination).Collection(d => d.FAQs).LoadAsync();
 
+            await InvalidateDestinationsCache();
+
             return _mapper.Map<DestinationDetailsResponse>(destination);
         }
 
@@ -400,6 +459,8 @@ namespace TravelTechApi.Services.Destination
                 }
             }
 
+            await InvalidateDestinationsCache();
+
             return _mapper.Map<DestinationDetailsResponse>(destination);
         }
 
@@ -416,6 +477,8 @@ namespace TravelTechApi.Services.Destination
 
             _context.Destinations.Remove(destination);
             await _context.SaveChangesAsync();
+
+            await InvalidateDestinationsCache();
 
             _logger.LogInformation("Destination deleted successfully: {DestinationId}", id);
         }
