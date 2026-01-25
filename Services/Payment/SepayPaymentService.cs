@@ -45,13 +45,7 @@ namespace TravelTechApi.Services.Payment
                     throw new BadRequestException("Invalid subscription plan");
                 }
 
-                // Generate unique order code: PLAN{id}U{userIdPrefix}T{timestamp}
-                // Shorten userId to keep order code reasonably short if needed, but ensure uniqueness with timestamp
-                var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                var shortUserId = userId.Length > 8 ? userId.Substring(0, 8) : userId;
-                var orderCode = $"PLAN{dto.SubscriptionPlanId}U{shortUserId}T{timestamp}";
-
-                // Calculate amount
+                // Calculate amount and resolve giftcode first
                 decimal amount = plan.Price;
                 decimal originalAmount = plan.Price;
                 int? giftcodeId = null;
@@ -71,6 +65,59 @@ namespace TravelTechApi.Services.Payment
                         }
                     }
                 }
+
+                // Check for existing pending transaction for this user and plan
+                var existingTransaction = await _context.PaymentTransactions
+                    .Where(p => p.UserId == userId &&
+                                p.SubscriptionPlanId == dto.SubscriptionPlanId &&
+                                p.Status == PaymentStatus.Pending)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                if (existingTransaction != null)
+                {
+                    // If details match (same amount/giftcode), reuse it
+                    if (existingTransaction.Amount == amount && existingTransaction.GiftcodeId == giftcodeId)
+                    {
+                        string reusedQrUrl = string.Empty;
+                        if (existingTransaction.Amount > 0)
+                        {
+                            reusedQrUrl = GenerateQRCodeUrl(
+                                _sepaySettings.BankCode,
+                                _sepaySettings.AccountNumber,
+                                _sepaySettings.AccountName,
+                                existingTransaction.Amount,
+                                existingTransaction.OrderCode
+                            );
+                        }
+
+                        return new PaymentOrderResponse
+                        {
+                            PaymentId = existingTransaction.Id,
+                            OrderCode = existingTransaction.OrderCode,
+                            Amount = existingTransaction.Amount,
+                            AccountNumber = _sepaySettings.AccountNumber,
+                            AccountName = _sepaySettings.AccountName,
+                            BankCode = _sepaySettings.BankCode,
+                            Description = existingTransaction.OrderCode,
+                            QRCodeUrl = reusedQrUrl,
+                            Status = existingTransaction.Status,
+                            CreatedAt = existingTransaction.CreatedAt
+                        };
+                    }
+                    else
+                    {
+                        // Details changed (e.g. user added/removed code), cancel old pending order
+                        existingTransaction.Status = PaymentStatus.Cancelled;
+                        // Continue to create new one
+                    }
+                }
+
+                // Generate unique order code: PLAN{id}U{userIdPrefix}T{timestamp}
+                // Shorten userId to keep order code reasonably short if needed, but ensure uniqueness with timestamp
+                var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                var shortUserId = userId.Length > 8 ? userId.Substring(0, 8) : userId;
+                var orderCode = $"PLAN{dto.SubscriptionPlanId}U{shortUserId}T{timestamp}";
 
                 var payment = new PaymentTransaction
                 {
