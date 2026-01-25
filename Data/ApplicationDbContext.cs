@@ -1,3 +1,4 @@
+using AutoMapper.Execution;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TravelTechApi.Entities;
@@ -44,8 +45,10 @@ namespace TravelTechApi.Data
         public DbSet<ContactMessage> ContactMessages { get; set; }
 
         // Payment
-        public DbSet<PaymentTransaction> PaymentTransactions { get; set; } = null!;
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         public DbSet<Giftcode> Giftcodes { get; set; }
+
+        public DbSet<WebsiteFeedback> WebsiteFeedbacks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -362,6 +365,20 @@ namespace TravelTechApi.Data
                 entity.Property(e => e.MaximumDiscountAmount).IsRequired().HasColumnType("decimal(18,2)");
                 entity.Property(e => e.DiscountPercentage).IsRequired();
                 entity.Property(e => e.Description).HasMaxLength(500);
+            });
+
+            builder.Entity<WebsiteFeedback>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Rating).IsRequired();
+                entity.Property(e => e.AiTripPlannerUsefulness).IsRequired();
+                entity.Property(e => e.Content).IsRequired();
+                entity.Property(e => e.WouldRecommend).IsRequired();
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.Property(e => e.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
         }
     }
