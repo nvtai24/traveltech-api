@@ -47,6 +47,9 @@ namespace TravelTechApi.Common.Extensions
             services.AddScoped<IPaymentService, SepayPaymentService>();
             services.AddScoped<IGiftcodeService, GiftcodeService>();
 
+            // Register Hosted Services
+            services.AddHostedService<TravelTechApi.Worker.PaymentCleanupWorker>();
+
             return services;
         }
 
