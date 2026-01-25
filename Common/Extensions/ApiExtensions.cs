@@ -1,5 +1,4 @@
 using Microsoft.OpenApi.Models;
-using TravelTechApi.Common.Middlewares;
 using TravelTechApi.Common.Settings;
 
 namespace TravelTechApi.Common.Extensions
@@ -23,7 +22,7 @@ namespace TravelTechApi.Common.Extensions
                 });
 
             // Add global exception handler
-            services.AddExceptionHandler<GlobalExceptionHandler>();
+            services.AddExceptionHandler<TravelTechApi.Common.Exceptions.GlobalExceptionHandler>();
             services.AddProblemDetails();
 
             // Add Swagger/OpenAPI
