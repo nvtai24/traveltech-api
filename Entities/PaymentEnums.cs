@@ -7,7 +7,8 @@ namespace TravelTechApi.Entities
         Completed = 2,
         Failed = 3,
         Cancelled = 4,
-        Refunded = 5
+        Refunded = 5,
+        Expired = 6
     }
 
     // public enum PaymentMethod

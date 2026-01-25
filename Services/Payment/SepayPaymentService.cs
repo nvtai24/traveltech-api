@@ -67,6 +67,7 @@ namespace TravelTechApi.Services.Payment
                 }
 
                 // Check for existing pending transaction for this user and plan
+                // Must be pending AND not expired
                 var existingTransaction = await _context.PaymentTransactions
                     .Where(p => p.UserId == userId &&
                                 p.SubscriptionPlanId == dto.SubscriptionPlanId &&
@@ -76,40 +77,51 @@ namespace TravelTechApi.Services.Payment
 
                 if (existingTransaction != null)
                 {
-                    // If details match (same amount/giftcode), reuse it
-                    if (existingTransaction.Amount == amount && existingTransaction.GiftcodeId == giftcodeId)
+                    // Check if expired
+                    if (existingTransaction.ExpiresAt.HasValue && existingTransaction.ExpiresAt.Value < DateTime.UtcNow)
                     {
-                        string reusedQrUrl = string.Empty;
-                        if (existingTransaction.Amount > 0)
-                        {
-                            reusedQrUrl = GenerateQRCodeUrl(
-                                _sepaySettings.BankCode,
-                                _sepaySettings.AccountNumber,
-                                _sepaySettings.AccountName,
-                                existingTransaction.Amount,
-                                existingTransaction.OrderCode
-                            );
-                        }
-
-                        return new PaymentOrderResponse
-                        {
-                            PaymentId = existingTransaction.Id,
-                            OrderCode = existingTransaction.OrderCode,
-                            Amount = existingTransaction.Amount,
-                            AccountNumber = _sepaySettings.AccountNumber,
-                            AccountName = _sepaySettings.AccountName,
-                            BankCode = _sepaySettings.BankCode,
-                            Description = existingTransaction.OrderCode,
-                            QRCodeUrl = reusedQrUrl,
-                            Status = existingTransaction.Status,
-                            CreatedAt = existingTransaction.CreatedAt
-                        };
+                        // Expired: Mark as Cancelled (or Failed) and create new
+                        existingTransaction.Status = PaymentStatus.Expired;
+                        // Continue to create new one
                     }
                     else
                     {
-                        // Details changed (e.g. user added/removed code), cancel old pending order
-                        existingTransaction.Status = PaymentStatus.Cancelled;
-                        // Continue to create new one
+                        // Valid pending transaction found
+                        // If details match (same amount/giftcode), reuse it
+                        if (existingTransaction.Amount == amount && existingTransaction.GiftcodeId == giftcodeId)
+                        {
+                            string reusedQrUrl = string.Empty;
+                            if (existingTransaction.Amount > 0)
+                            {
+                                reusedQrUrl = GenerateQRCodeUrl(
+                                    _sepaySettings.BankCode,
+                                    _sepaySettings.AccountNumber,
+                                    _sepaySettings.AccountName,
+                                    existingTransaction.Amount,
+                                    existingTransaction.OrderCode
+                                );
+                            }
+
+                            return new PaymentOrderResponse
+                            {
+                                PaymentId = existingTransaction.Id,
+                                OrderCode = existingTransaction.OrderCode,
+                                Amount = existingTransaction.Amount,
+                                AccountNumber = _sepaySettings.AccountNumber,
+                                AccountName = _sepaySettings.AccountName,
+                                BankCode = _sepaySettings.BankCode,
+                                Description = existingTransaction.OrderCode,
+                                QRCodeUrl = reusedQrUrl,
+                                Status = existingTransaction.Status,
+                                CreatedAt = existingTransaction.CreatedAt
+                            };
+                        }
+                        else
+                        {
+                            // Details changed, cancel old pending order
+                            existingTransaction.Status = PaymentStatus.Cancelled;
+                            // Continue to create new one
+                        }
                     }
                 }
 
@@ -132,6 +144,7 @@ namespace TravelTechApi.Services.Payment
                     Status = amount <= 0 ? PaymentStatus.Completed : PaymentStatus.Pending,
                     Description = orderCode, // Important: SePay matches based on this content
                     CreatedAt = DateTime.UtcNow,
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(15) // Expires in 15 minutes
                 };
 
                 // If amount is 0, activate subscription immediately
