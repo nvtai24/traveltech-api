@@ -101,9 +101,6 @@ namespace TravelTechApi.Services.Payment
                             if (existingTransaction.Amount > 0)
                             {
                                 reusedQrUrl = GenerateQRCodeUrl(
-                                    _sepaySettings.BankCode,
-                                    _sepaySettings.AccountNumber,
-                                    _sepaySettings.AccountName,
                                     existingTransaction.Amount,
                                     existingTransaction.OrderCode
                                 );
@@ -184,9 +181,6 @@ namespace TravelTechApi.Services.Payment
                 if (amount > 0)
                 {
                     qrUrl = GenerateQRCodeUrl(
-                        _sepaySettings.BankCode,
-                        _sepaySettings.AccountNumber,
-                        _sepaySettings.AccountName,
                         payment.Amount,
                         orderCode
                     );
@@ -366,14 +360,13 @@ namespace TravelTechApi.Services.Payment
         }
 
 
-        private string GenerateQRCodeUrl(string bank, string accNo, string accName, decimal amount, string content)
+        private string GenerateQRCodeUrl(decimal amount, string content)
         {
-            // Using VietQR Quick Link
-            // Format: https://img.vietqr.io/image/<BANK>-<ACC_NO>-<TEMPLATE>.png
+            // Using Sepay Quick Link
+            // https://qr.sepay.vn/img?acc=SO_TAI_KHOAN&bank=NGAN_HANG&amount=SO_TIEN&des=NOI_DUNG&template=TEMPLATE
             var template = "compact2";
-            var encodedName = Uri.EscapeDataString(accName);
             var encodedContent = Uri.EscapeDataString(content);
-            return $"{_sepaySettings.QRCodeBaseUrl}/{bank}-{accNo}-{template}.png?amount={amount}&addInfo={encodedContent}&accountName={encodedName}";
+            return $"{_sepaySettings.QRCodeBaseUrl}?acc={_sepaySettings.AccountNumber}&bank={_sepaySettings.BankCode}&amount={amount}&des={encodedContent}&template={template}";
         }
     }
 }
