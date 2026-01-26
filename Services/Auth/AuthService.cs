@@ -249,6 +249,8 @@ namespace TravelTechApi.Services.Auth
         {
             _logger.LogInformation("Token refresh attempt");
 
+            var tx = await _context.Database.BeginTransactionAsync();
+
             // Find refresh token in database
             var storedRefreshToken = await _context.RefreshTokens
                 .FirstOrDefaultAsync(rt => rt.Token == refreshTokenRequest.RefreshToken);
@@ -260,10 +262,15 @@ namespace TravelTechApi.Services.Auth
             }
 
             // Validate refresh token
+            // Maybe hacker use old refresh token to get new access token
+            // Best practice: Revoke all refresh tokens of user immediately when this case occur
+            // Refresh Token Rotation
             if (storedRefreshToken.IsUsed)
             {
+                await RevokeTokenAsync(storedRefreshToken.UserId);
+                await tx.CommitAsync();
                 _logger.LogWarning("Token refresh failed - token already used. UserId: {UserId}", storedRefreshToken.UserId);
-                throw new UnauthorizedException("Refresh token has already been used");
+                throw new UnauthorizedException("Refresh token reuse detected. All sessions revoked.");
             }
 
             if (storedRefreshToken.IsRevoked)
@@ -283,6 +290,7 @@ namespace TravelTechApi.Services.Auth
 
             // Mark old refresh token as used
             storedRefreshToken.IsUsed = true;
+            storedRefreshToken.IsRevoked = true; // mark as revoked, to prevent reuse
             await _context.SaveChangesAsync();
             _logger.LogDebug("Marked refresh token as used for user: {UserId}", storedRefreshToken.UserId);
 
@@ -318,7 +326,10 @@ namespace TravelTechApi.Services.Auth
             };
 
             await _context.RefreshTokens.AddAsync(refreshTokenEntity);
+
             await _context.SaveChangesAsync();
+            await tx.CommitAsync();
+
             _logger.LogDebug("Saved new refresh token to database. JTI: {Jti}, ExpiresAt: {ExpiresAt}",
                 jti, refreshTokenEntity.ExpiresAt);
 
