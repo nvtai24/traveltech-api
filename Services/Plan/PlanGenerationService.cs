@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using TravelTechApi.Common.Exceptions;
 using TravelTechApi.Data;
+using TravelTechApi.DTOs.AI;
 using TravelTechApi.DTOs.Plan;
 using TravelTechApi.Entities;
 using TravelTechApi.Services.AI;
@@ -16,7 +17,6 @@ namespace TravelTechApi.Services.Plan
         private readonly IAIService _aiService;
         private readonly IMapper _mapper;
         private readonly ILogger<PlanGenerationService> _logger;
-
         private readonly IUserPlanSubscriptionService _userPlanSubscriptionService;
 
         public PlanGenerationService(
@@ -66,24 +66,25 @@ namespace TravelTechApi.Services.Plan
                     .Where(h => request.HobbyIds.Contains(h.Id))
                     .ToListAsync();
 
-                // 2. Call AI service
+                // 2. Build AI generation context
                 var destinationNames = location.Destinations.Select(d => d.Name).ToList();
                 var hobbyNames = hobbies.Select(h => h.Name).ToList();
 
-                var aiResponse = await _aiService.GenerateTravelPlanAsync(
-                    location.Name,
-                    currentLocation?.Name,
-                    request.NumberOfPeople,
-                    request.Duration,
-                    priceSetting.Name,
-                    request.Notes ?? string.Empty,
-                    hobbyNames,
-                    destinationNames
-                );
+                var context = new AIGenerationContext
+                {
+                    LocationName = location.Name,
+                    CurrentLocationName = currentLocation?.Name,
+                    NumberOfPeople = request.NumberOfPeople,
+                    Duration = request.Duration,
+                    PriceRange = priceSetting.Name,
+                    Notes = request.Notes ?? string.Empty,
+                    Hobbies = hobbyNames,
+                    DestinationNames = destinationNames
+                };
 
-                // 3. Parse AI response
-                var cleanAiResponse = CleanJsonString(aiResponse);
-                var aiPlan = ParseAIResponse(cleanAiResponse);
+                // 3. Call AI service with multi-step generation
+                _logger.LogInformation("Starting multi-step AI generation for {Duration} days", request.Duration);
+                var aiPlan = await _aiService.GenerateFullPlanAsync(context);
 
                 // 4. Create Plan entity
                 var plan = new Entities.Plan
@@ -101,7 +102,7 @@ namespace TravelTechApi.Services.Plan
                     GeneratedAt = DateTime.UtcNow,
                     AIModel = _aiService.GetModel(),
                     UserId = userId,
-                    AIResponseJson = cleanAiResponse
+                    AIResponseJson = JsonSerializer.Serialize(aiPlan)
                 };
 
                 // 5. Add accommodations
@@ -139,7 +140,7 @@ namespace TravelTechApi.Services.Plan
                     });
                 }
 
-                // 7. Add daily itineraries
+                // 7. Add daily itineraries from multi-step generation
                 foreach (var dayPlan in aiPlan.DailyItineraries)
                 {
                     var dailyItinerary = new DailyItinerary
@@ -166,7 +167,6 @@ namespace TravelTechApi.Services.Plan
                             Description = act.Description,
                             StartTime = TimeSpan.Parse(act.StartTime),
                             EndTime = TimeSpan.Parse(act.EndTime),
-                            // DestinationId = destinationId,
                             PriceFrom = act.PriceFrom,
                             PriceTo = act.PriceTo,
                             Tips = act.Tips,
@@ -201,7 +201,8 @@ namespace TravelTechApi.Services.Plan
                 _context.Plans.Add(plan);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Successfully generated plan {PlanId} for user {UserId}", plan.Id, userId);
+                _logger.LogInformation("Successfully generated plan {PlanId} for user {UserId} with {Days} days",
+                    plan.Id, userId, plan.DailyItineraries.Count);
 
                 // 9. Return response
                 return await GetPlanByIdAsync(plan.Id, userId)
@@ -225,7 +226,6 @@ namespace TravelTechApi.Services.Plan
                 .Include(p => p.TransportationRecommendations)
                 .Include(p => p.DailyItineraries)
                     .ThenInclude(d => d.Activities)
-                // .ThenInclude(a => a.Destination)
                 .Include(p => p.DailyItineraries)
                     .ThenInclude(d => d.FoodRecommendations)
                 .FirstOrDefaultAsync(p => p.Id == planId && p.UserId == userId);
@@ -274,120 +274,6 @@ namespace TravelTechApi.Services.Plan
             await _context.SaveChangesAsync();
 
             return true;
-        }
-
-        private string CleanJsonString(string aiResponse)
-        {
-            var jsonResponse = aiResponse.Trim();
-            if (jsonResponse.StartsWith("```json"))
-            {
-                jsonResponse = jsonResponse.Substring(7);
-            }
-            else if (jsonResponse.StartsWith("```"))
-            {
-                jsonResponse = jsonResponse.Substring(3);
-            }
-
-            if (jsonResponse.EndsWith("```"))
-            {
-                jsonResponse = jsonResponse.Substring(0, jsonResponse.Length - 3);
-            }
-
-            return jsonResponse.Trim();
-        }
-
-        private AIPlanResponse ParseAIResponse(string jsonResponse)
-        {
-            try
-            {
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                };
-
-                return JsonSerializer.Deserialize<AIPlanResponse>(jsonResponse, options)
-                    ?? throw new Exception("Failed to parse AI response");
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogError(ex, "Failed to parse AI response: {Response}", jsonResponse);
-                throw new Exception("Invalid AI response format");
-            }
-        }
-
-        // Internal DTOs for AI response parsing
-        private class AIPlanResponse
-        {
-            public string Summary { get; set; } = string.Empty;
-            public decimal TotalEstimatedCostFrom { get; set; }
-            public decimal TotalEstimatedCostTo { get; set; }
-            public List<AIAccommodation> Accommodations { get; set; } = new();
-            public List<AITransportation> Transportations { get; set; } = new();
-            public List<AIDailyItinerary> DailyItineraries { get; set; } = new();
-        }
-
-        private class AIAccommodation
-        {
-            public string AccommodationType { get; set; } = string.Empty;
-            public string Name { get; set; } = string.Empty;
-            public string Address { get; set; } = string.Empty;
-            public decimal PricePerNight { get; set; }
-            public string Description { get; set; } = string.Empty;
-            public List<string> Amenities { get; set; } = new();
-            public decimal? Rating { get; set; }
-            public string? BookingUrl { get; set; }
-            public string? ContactInfo { get; set; }
-            public string? ImageUrl { get; set; }
-            public string? MapUrl { get; set; }
-        }
-
-        private class AITransportation
-        {
-            public string TransportationType { get; set; } = string.Empty;
-            public string Route { get; set; } = string.Empty;
-            public decimal PriceFrom { get; set; }
-            public decimal PriceTo { get; set; }
-            public string Duration { get; set; } = string.Empty;
-            public string? BookingInfo { get; set; }
-            public string? Tips { get; set; }
-            public string? Provider { get; set; }
-        }
-
-        private class AIDailyItinerary
-        {
-            public int DayNumber { get; set; }
-            public string Summary { get; set; } = string.Empty;
-            public List<AIActivity> Activities { get; set; } = new();
-            public List<AIFoodRecommendation> FoodRecommendations { get; set; } = new();
-        }
-
-        private class AIActivity
-        {
-            public string Name { get; set; } = string.Empty;
-            public string Description { get; set; } = string.Empty;
-            public string StartTime { get; set; } = string.Empty;
-            public string EndTime { get; set; } = string.Empty;
-            public string? DestinationName { get; set; }
-            public decimal? PriceFrom { get; set; }
-            public decimal? PriceTo { get; set; }
-            public string? Tips { get; set; }
-            public int Order { get; set; }
-            public string? MapUrl { get; set; }
-            public string? ImageUrl { get; set; }
-        }
-
-        private class AIFoodRecommendation
-        {
-            public string MealType { get; set; } = string.Empty;
-            public string DishName { get; set; } = string.Empty;
-            public string RestaurantName { get; set; } = string.Empty;
-            public string Address { get; set; } = string.Empty;
-            public decimal? PriceFrom { get; set; }
-            public decimal? PriceTo { get; set; }
-            public string? Description { get; set; }
-            public string? SpecialtyNote { get; set; }
-            public string? ImageUrl { get; set; }
-            public string? MapUrl { get; set; }
         }
     }
 }
