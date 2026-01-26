@@ -41,7 +41,7 @@ namespace TravelTechApi.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([FromBody] CreateGiftcodeDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateGiftcodeRequest dto)
         {
             if (await _giftcodeService.GetGiftcodeByCodeAsync(dto.Code) != null)
             {
@@ -58,7 +58,7 @@ namespace TravelTechApi.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateGiftcodeDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateGiftcodeRequest dto)
         {
             var result = await _giftcodeService.UpdateGiftcodeAsync(id, dto);
             if (result == null)

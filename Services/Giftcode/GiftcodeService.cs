@@ -18,7 +18,7 @@ namespace TravelTechApi.Services.Giftcode
             _mapper = mapper;
         }
 
-        public async Task<PagedResult<GiftcodeDto>> GetAllGiftcodesAsync(int page, int pageSize)
+        public async Task<PagedResult<GiftcodeResponse>> GetAllGiftcodesAsync(int page, int pageSize)
         {
             var query = _context.Giftcodes.AsQueryable();
             var totalCount = await query.CountAsync();
@@ -29,26 +29,26 @@ namespace TravelTechApi.Services.Giftcode
                 .Take(pageSize)
                 .ToListAsync();
 
-            var dtos = _mapper.Map<List<GiftcodeDto>>(items);
+            var dtos = _mapper.Map<List<GiftcodeResponse>>(items);
 
-            return PagedResult<GiftcodeDto>.Create(dtos, totalCount, page, pageSize);
+            return PagedResult<GiftcodeResponse>.Create(dtos, totalCount, page, pageSize);
         }
 
-        public async Task<GiftcodeDto?> GetGiftcodeByIdAsync(int id)
+        public async Task<GiftcodeResponse?> GetGiftcodeByIdAsync(int id)
         {
             var giftcode = await _context.Giftcodes.FindAsync(id);
             if (giftcode == null) return null;
-            return _mapper.Map<GiftcodeDto>(giftcode);
+            return _mapper.Map<GiftcodeResponse>(giftcode);
         }
 
-        public async Task<GiftcodeDto?> GetGiftcodeByCodeAsync(string code)
+        public async Task<GiftcodeResponse?> GetGiftcodeByCodeAsync(string code)
         {
             var giftcode = await _context.Giftcodes.FirstOrDefaultAsync(g => g.Code == code);
             if (giftcode == null) return null;
-            return _mapper.Map<GiftcodeDto>(giftcode);
+            return _mapper.Map<GiftcodeResponse>(giftcode);
         }
 
-        public async Task<GiftcodeDto> CreateGiftcodeAsync(CreateGiftcodeDto dto)
+        public async Task<GiftcodeResponse> CreateGiftcodeAsync(CreateGiftcodeRequest dto)
         {
             var giftcode = _mapper.Map<TravelTechApi.Entities.Giftcode>(dto);
             giftcode.CreatedAt = DateTime.UtcNow;
@@ -56,10 +56,10 @@ namespace TravelTechApi.Services.Giftcode
             _context.Giftcodes.Add(giftcode);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<GiftcodeDto>(giftcode);
+            return _mapper.Map<GiftcodeResponse>(giftcode);
         }
 
-        public async Task<GiftcodeDto?> UpdateGiftcodeAsync(int id, UpdateGiftcodeDto dto)
+        public async Task<GiftcodeResponse?> UpdateGiftcodeAsync(int id, UpdateGiftcodeRequest dto)
         {
             var giftcode = await _context.Giftcodes.FindAsync(id);
             if (giftcode == null) return null;
@@ -67,7 +67,7 @@ namespace TravelTechApi.Services.Giftcode
             _mapper.Map(dto, giftcode);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<GiftcodeDto>(giftcode);
+            return _mapper.Map<GiftcodeResponse>(giftcode);
         }
 
         public async Task<bool> DeleteGiftcodeAsync(int id)

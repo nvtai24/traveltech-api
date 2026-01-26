@@ -61,9 +61,9 @@ namespace TravelTechApi.Services.Payment
                         {
                             var discountAmount = amount * giftcode.DiscountPercentage / 100;
 
-                            if (discountAmount > giftcode.MaxDiscountAmount)
+                            if (discountAmount > giftcode.MaximumDiscountAmount)
                             {
-                                discountAmount = giftcode.MaxDiscountAmount;
+                                discountAmount = giftcode.MaximumDiscountAmount;
                             }
 
                             amount -= discountAmount;

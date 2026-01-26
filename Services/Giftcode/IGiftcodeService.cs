@@ -5,11 +5,11 @@ namespace TravelTechApi.Services.Giftcode
 {
     public interface IGiftcodeService
     {
-        Task<PagedResult<GiftcodeDto>> GetAllGiftcodesAsync(int page, int pageSize);
-        Task<GiftcodeDto?> GetGiftcodeByIdAsync(int id);
-        Task<GiftcodeDto?> GetGiftcodeByCodeAsync(string code);
-        Task<GiftcodeDto> CreateGiftcodeAsync(CreateGiftcodeDto dto);
-        Task<GiftcodeDto?> UpdateGiftcodeAsync(int id, UpdateGiftcodeDto dto);
+        Task<PagedResult<GiftcodeResponse>> GetAllGiftcodesAsync(int page, int pageSize);
+        Task<GiftcodeResponse?> GetGiftcodeByIdAsync(int id);
+        Task<GiftcodeResponse?> GetGiftcodeByCodeAsync(string code);
+        Task<GiftcodeResponse> CreateGiftcodeAsync(CreateGiftcodeRequest dto);
+        Task<GiftcodeResponse?> UpdateGiftcodeAsync(int id, UpdateGiftcodeRequest dto);
         Task<bool> DeleteGiftcodeAsync(int id);
         Task<bool> ValidateGiftcodeAsync(string code);
         Task IncrementUsageAsync(int id);

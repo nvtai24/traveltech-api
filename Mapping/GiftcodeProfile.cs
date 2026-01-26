@@ -8,9 +8,9 @@ namespace TravelTechApi.Mapping
     {
         public GiftcodeProfile()
         {
-            CreateMap<Giftcode, GiftcodeDto>();
-            CreateMap<CreateGiftcodeDto, Giftcode>();
-            CreateMap<UpdateGiftcodeDto, Giftcode>()
+            CreateMap<Giftcode, GiftcodeResponse>();
+            CreateMap<CreateGiftcodeRequest, Giftcode>();
+            CreateMap<UpdateGiftcodeRequest, Giftcode>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
