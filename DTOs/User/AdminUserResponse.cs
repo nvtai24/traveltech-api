@@ -1,0 +1,26 @@
+using TravelTechApi.Entities;
+
+namespace TravelTechApi.DTOs.User
+{
+    /// <summary>
+    /// Detailed user response for admin
+    /// </summary>
+    public class AdminUserResponse
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public Gender? Gender { get; set; }
+        public DateTime? Dob { get; set; }
+        public string AvatarUrl { get; set; } = string.Empty;
+        public List<string> Roles { get; set; } = new List<string>();
+        public string SubscriptionPlan { get; set; } = string.Empty;
+        public bool EmailConfirmed { get; set; }
+        public bool IsLocked { get; set; }
+        public DateTime? LockoutEnd { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+    }
+}

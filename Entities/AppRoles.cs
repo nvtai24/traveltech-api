@@ -15,13 +15,15 @@ namespace TravelTechApi.Common.Constants
         /// </summary>
         public const string User = "User";
 
+        public const string Moderator = "Moderator";
+
 
         /// <summary>
         /// Get all available roles
         /// </summary>
         public static string[] GetAllRoles()
         {
-            return new[] { Admin, User };
+            return new[] { Admin, User, Moderator };
         }
     }
 }

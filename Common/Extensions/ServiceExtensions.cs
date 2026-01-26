@@ -14,6 +14,7 @@ using TravelTechApi.Services.Quota;
 using TravelTechApi.Services.UserPlanSubscription;
 using TravelTechApi.Services.Giftcode;
 using TravelTechApi.Services.WebsiteFeedback;
+using TravelTechApi.Services.User;
 
 namespace TravelTechApi.Common.Extensions
 {
@@ -48,6 +49,7 @@ namespace TravelTechApi.Common.Extensions
             services.AddScoped<IPaymentService, SepayPaymentService>();
             services.AddScoped<IGiftcodeService, GiftcodeService>();
             services.AddScoped<IWebsiteFeedbackService, WebsiteFeedbackService>();
+            services.AddScoped<IUserManagementService, UserManagementService>();
 
             // Register Hosted Services
             services.AddHostedService<TravelTechApi.Worker.PaymentCleanupWorker>();
