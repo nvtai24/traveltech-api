@@ -49,6 +49,7 @@ namespace TravelTechApi.Data
         public DbSet<Giftcode> Giftcodes { get; set; }
 
         public DbSet<WebsiteFeedback> WebsiteFeedbacks { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -367,6 +368,7 @@ namespace TravelTechApi.Data
                 entity.Property(e => e.Description).HasMaxLength(500);
             });
 
+            // Configure WebsiteFeedback
             builder.Entity<WebsiteFeedback>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -379,6 +381,22 @@ namespace TravelTechApi.Data
                     .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.SetNull);
                 entity.Property(e => e.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
+
+            // Configure AuditLog
+            builder.Entity<AuditLog>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Action).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.EntityName).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.IpAddress).HasMaxLength(50);
+                entity.HasIndex(e => e.CreatedAt); // Index for performance when querying logs
+                entity.HasIndex(e => e.UserId);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
         }
     }

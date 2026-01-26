@@ -50,6 +50,7 @@ namespace TravelTechApi.Common.Extensions
             services.AddScoped<IGiftcodeService, GiftcodeService>();
             services.AddScoped<IWebsiteFeedbackService, WebsiteFeedbackService>();
             services.AddScoped<IUserManagementService, UserManagementService>();
+            services.AddScoped<IAuditLogService, AuditLogService>();
 
             // Register Hosted Services
             services.AddHostedService<TravelTechApi.Worker.PaymentCleanupWorker>();
