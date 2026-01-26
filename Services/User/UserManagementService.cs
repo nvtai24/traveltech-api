@@ -9,6 +9,7 @@ using TravelTechApi.DTOs.Common;
 using TravelTechApi.DTOs.User;
 using TravelTechApi.Entities;
 using TravelTechApi.Services.UserPlanSubscription;
+using TravelTechApi.Services.Auth;
 
 namespace TravelTechApi.Services.User
 {
@@ -23,6 +24,8 @@ namespace TravelTechApi.Services.User
         private readonly IUserPlanSubscriptionService _userPlanSubscriptionService;
         private readonly ILogger<UserManagementService> _logger;
         private readonly IMapper _mapper;
+        private readonly Services.Audit.IAuditLogService _auditLogService;
+        private readonly ICurrentUserService _currentUserService;
 
         public UserManagementService(
             ApplicationDbContext context,
@@ -30,7 +33,9 @@ namespace TravelTechApi.Services.User
             RoleManager<IdentityRole> roleManager,
             IUserPlanSubscriptionService userPlanSubscriptionService,
             ILogger<UserManagementService> logger,
-            IMapper mapper)
+            IMapper mapper,
+            Services.Audit.IAuditLogService auditLogService,
+            ICurrentUserService currentUserService)
         {
             _context = context;
             _userManager = userManager;
@@ -38,6 +43,8 @@ namespace TravelTechApi.Services.User
             _userPlanSubscriptionService = userPlanSubscriptionService;
             _logger = logger;
             _mapper = mapper;
+            _auditLogService = auditLogService;
+            _currentUserService = currentUserService;
         }
 
         public async Task<PagedResult<AdminUserListItemResponse>> GetAllUsersAsync(int page, int pageSize, string? searchTerm = null, string? role = null)
@@ -77,7 +84,7 @@ namespace TravelTechApi.Services.User
 
                 var response = _mapper.Map<AdminUserListItemResponse>(user);
                 response.Roles = roles.ToList();
-                response.SubscriptionPlan = await GetSubscriptionPlanNameAsync(user.Id);
+                response.SubscriptionPlan = await _userPlanSubscriptionService.GetCurrentPlanNameAsync(user.Id);
 
                 userResponses.Add(response);
             }
@@ -99,22 +106,9 @@ namespace TravelTechApi.Services.User
 
             var response = _mapper.Map<AdminUserResponse>(user);
             response.Roles = (await _userManager.GetRolesAsync(user)).ToList();
-            response.SubscriptionPlan = await GetSubscriptionPlanNameAsync(user.Id);
+            response.SubscriptionPlan = await _userPlanSubscriptionService.GetCurrentPlanNameAsync(user.Id);
 
             return response;
-        }
-
-        private async Task<string> GetSubscriptionPlanNameAsync(string userId)
-        {
-            try
-            {
-                var plan = await _userPlanSubscriptionService.GetCurrentPlanAsync(userId);
-                return plan.Name;
-            }
-            catch (NotFoundException)
-            {
-                return "Basic";
-            }
         }
 
         public async Task<AdminUserResponse> UpdateUserAsync(string userId, UpdateUserRequest request)
@@ -134,6 +128,14 @@ namespace TravelTechApi.Services.User
 
             await _context.SaveChangesAsync();
             _logger.LogInformation("Admin updated user {UserId}", userId);
+
+            await _auditLogService.LogAsync(
+                _currentUserService.UserId,
+                "Update",
+                "User",
+                userId,
+                $"Updated profile for user {user.Email}"
+            );
 
             return await GetUserByIdAsync(userId);
         }
@@ -163,6 +165,14 @@ namespace TravelTechApi.Services.User
             }
 
             _logger.LogInformation("Admin locked user {UserId}", userId);
+
+            await _auditLogService.LogAsync(
+                _currentUserService.UserId,
+                "Lock",
+                "User",
+                userId,
+                "Locked user account indefinitely"
+            );
         }
 
         public async Task UnlockUserAsync(string userId)
@@ -182,6 +192,14 @@ namespace TravelTechApi.Services.User
             }
 
             _logger.LogInformation("Admin unlocked user {UserId}", userId);
+
+            await _auditLogService.LogAsync(
+                _currentUserService.UserId,
+                "Unlock",
+                "User",
+                userId,
+                "Unlocked user account"
+            );
         }
 
         public async Task<AdminUserResponse> ChangeUserRoleAsync(string userId, string newRole)
@@ -221,6 +239,14 @@ namespace TravelTechApi.Services.User
 
             _logger.LogInformation("Admin changed user {UserId} role to {Role}", userId, newRole);
 
+            await _auditLogService.LogAsync(
+                _currentUserService.UserId,
+                "ChangeRole",
+                "User",
+                userId,
+                $"Changed role to {newRole}"
+            );
+
             return await GetUserByIdAsync(userId);
         }
 
@@ -256,6 +282,14 @@ namespace TravelTechApi.Services.User
             }
 
             _logger.LogInformation("Admin deleted user {UserId}", userId);
+
+            await _auditLogService.LogAsync(
+                _currentUserService.UserId,
+                "Delete",
+                "User",
+                userId,
+                "Deleted user account"
+            );
         }
     }
 }

@@ -15,6 +15,7 @@ using TravelTechApi.Services.UserPlanSubscription;
 using TravelTechApi.Services.Giftcode;
 using TravelTechApi.Services.WebsiteFeedback;
 using TravelTechApi.Services.User;
+using TravelTechApi.Services.Audit;
 
 namespace TravelTechApi.Common.Extensions
 {
@@ -31,9 +32,12 @@ namespace TravelTechApi.Common.Extensions
             // Register AutoMapper
             services.AddAutoMapper(typeof(Program).Assembly);
 
+            services.AddHttpContextAccessor();
+
             // Register application services
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IEmailService, SmtpEmailService>();
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<IRegionService, RegionService>();

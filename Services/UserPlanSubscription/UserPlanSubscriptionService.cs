@@ -36,6 +36,24 @@ namespace TravelTechApi.Services.UserPlanSubscription
             return subscription.SubscriptionPlan;
         }
 
+        public async Task<string> GetCurrentPlanNameAsync(string userId)
+        {
+            try
+            {
+                var plan = await GetCurrentPlanAsync(userId);
+                return plan?.Name ?? "Basic";
+            }
+            catch (NotFoundException)
+            {
+                return "Basic";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting plan name for user {UserId}", userId);
+                return "Basic";
+            }
+        }
+
         public async Task<bool> IsPlanLimitedAsync(string userId)
         {
             var plan = await GetCurrentPlanAsync(userId);
