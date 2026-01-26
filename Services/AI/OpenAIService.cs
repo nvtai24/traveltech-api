@@ -127,14 +127,14 @@ Quality Standards:
 
             // Build structured prompt with clear sections
             var contextSection = $@"## THÔNG TIN CHUYẾN ĐI
-📍 Điểm đến: {locationName}
-🚀 Xuất phát từ: {currentLocation}
-👥 Số người: {numberOfPeople} người
-📅 Thời gian: {duration} ngày
-💰 Ngân sách: {priceRange}
-🎯 Sở thích: {hobbyList}
-⭐ Điểm đến ưu tiên: {destinationList}
-📝 Ghi chú: {(string.IsNullOrEmpty(notes) ? "Không có" : notes)}";
+Điểm đến: {locationName}
+Xuất phát từ: {currentLocation}
+Số người: {numberOfPeople} người
+Thời gian: {duration} ngày
+Ngân sách: {priceRange}
+Sở thích: {hobbyList}
+Điểm đến ưu tiên: {destinationList}
+Ghi chú: {(string.IsNullOrEmpty(notes) ? "Không có" : notes)}";
 
             var requirementsSection = @"## YÊU CẦU CHI TIẾT
 
@@ -154,7 +154,7 @@ Mỗi ngày bao gồm:
 - **Hoạt động**: Địa điểm THỰC TẾ, thời gian hợp lý.
 - **Mô tả**: Viết sâu sắc (2-3 câu), nêu bật TẠI SAO nên đến đây, không viết chung chung kiểu ""đẹp lắm"".
 - **Tips**: Mẹo của người bản địa (góc chụp ảnh, giờ đi tránh đông, lưu ý trang phục...).
-- **Ẩm thực**: Món ăn ĐẶC TRƯNG, review ngắn gọn về hương vị.
+- **Ẩm thực**: BẮT BUỘC ít nhất 2-3 món ăn ĐẶC TRƯNG mỗi ngày (bao gồm các bữa: sáng, trưa, tối hoặc ăn vặt), review ngắn gọn về hương vị.
 - **Giá cả**: Ước tính chính xác.
 - **Maps**: Link Google Maps chuẩn.
 - **HÌNH ẢNH**: BẮT BUỘC sử dụng format sau:
@@ -172,6 +172,7 @@ Mỗi ngày bao gồm:
 ✓ Tên địa điểm phải là tên THẬT
 ✓ **Nội dung**: KHÔNG VIẾT NGẮN GỌN. Hãy viết như một bài blog du lịch nhỏ, đầy cảm hứng.
 ✓ **Số lượng hoạt động**: BẮT BUỘC 3 hoạt động mỗi ngày.
+✓ **Số lượng món ăn**: BẮT BUỘC ít nhất 2-3 món ăn mỗi ngày (bao gồm các bữa chính và ăn vặt).
 ✓ **ĐỘ DÀI & CHI TIẾT**: KHÔNG ĐƯỢC CẮT BỚT nội dung cho các ngày cuối. Ngày 5, 6, 7... phải chi tiết như ngày 1.
 ✓ **Image URLs**: Format Bing Thumbnail như yêu cầu.";
 
@@ -231,7 +232,7 @@ Trả về CHÍNH XÁC theo cấu trúc sau, KHÔNG thêm markdown:
       ],
       ""foodRecommendations"": [
         {
-          ""mealType"": ""Lunch"",
+          ""mealType"": ""Breakfast/Lunch/Dinner/Snack"",
           ""dishName"": ""Tên món"",
           ""restaurantName"": ""Tên quán"",
           ""address"": ""Địa chỉ"",
@@ -271,11 +272,12 @@ Ví dụ (Đà Lạt):
       ""foodRecommendations"": [
         {
           ""mealType"": ""Breakfast"",
-            ""dishName"": ""Bánh mì xíu mại"",
+          ""dishName"": ""Bánh mì xíu mại"",
           ""restaurantName"": ""Bánh mì xíu mại Hoàng Diệu"",
           ""description"": ""Viên xíu mại mềm thơm, nước dùng ngọt thanh từ xương hầm, chấm cùng bánh mì giòn rụm tạo nên bữa sáng ấm bụng giữa tiết trời se lạnh."",
           ""specialtyNote"": ""Nhớ gọi thêm ly sữa đậu nành nóng để trọn vẹn combo bữa sáng Đà Lạt."",
-          ""mapUrl"": ""https://google.com...""
+          ""mapUrl"": ""https://google.com..."",
+          ""imageUrl"": null
         }
       ]
     }
