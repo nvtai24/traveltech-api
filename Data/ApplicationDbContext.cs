@@ -50,6 +50,7 @@ namespace TravelTechApi.Data
 
         public DbSet<WebsiteFeedback> WebsiteFeedbacks { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<Blog> Blogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -397,6 +398,20 @@ namespace TravelTechApi.Data
                     .WithMany()
                     .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Configure Blog
+            builder.Entity<Blog>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Content).IsRequired();
+                entity.Property(e => e.Tags).IsRequired();
+
+                entity.HasOne(e => e.Author)
+                    .WithMany(u => u.Blogs)
+                    .HasForeignKey(e => e.AuthorId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

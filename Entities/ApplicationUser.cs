@@ -46,5 +46,7 @@ namespace TravelTechApi.Entities
         /// Navigation property for plan subscriptions
         /// </summary>
         public virtual ICollection<UserPlanSubscription> Subscriptions { get; set; } = new List<UserPlanSubscription>();
+
+        public virtual ICollection<Blog> Blogs { get; set; } = new List<Blog>();
     }
 }

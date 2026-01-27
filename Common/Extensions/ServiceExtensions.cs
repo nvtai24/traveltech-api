@@ -16,6 +16,7 @@ using TravelTechApi.Services.Giftcode;
 using TravelTechApi.Services.WebsiteFeedback;
 using TravelTechApi.Services.User;
 using TravelTechApi.Services.Audit;
+using TravelTechApi.Services.Blog;
 
 namespace TravelTechApi.Common.Extensions
 {
@@ -55,6 +56,7 @@ namespace TravelTechApi.Common.Extensions
             services.AddScoped<IWebsiteFeedbackService, WebsiteFeedbackService>();
             services.AddScoped<IUserManagementService, UserManagementService>();
             services.AddScoped<IAuditLogService, AuditLogService>();
+            services.AddScoped<IBlogService, BlogService>();
 
             // Register Hosted Services
             services.AddHostedService<TravelTechApi.Worker.PaymentCleanupWorker>();
