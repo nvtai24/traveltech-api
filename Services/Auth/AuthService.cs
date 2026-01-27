@@ -149,6 +149,13 @@ namespace TravelTechApi.Services.Auth
                 throw new UnauthorizedException("Invalid email or password");
             }
 
+            // Check if user is locked out
+            if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
+            {
+                _logger.LogWarning("Login failed - user locked out: {Email}", loginDto.Email);
+                throw new UnauthorizedException($"Your account is locked until {user.LockoutEnd}. Please contact support.");
+            }
+
             // Check if email is confirmed
             if (!user.EmailConfirmed)
             {
