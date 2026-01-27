@@ -193,7 +193,10 @@ namespace TravelTechApi.Services.Auth
                 throw new BadRequestException("Invalid Google ID token");
             }
 
-            var user = await _userManager.FindByEmailAsync(payload.Email);
+            var user = await _context.Users
+                .Include(u => u.Avatar)
+                .FirstOrDefaultAsync(u => u.Email == payload.Email);
+
             if (user == null)
             {
                 _logger.LogInformation("User not found, registering new user from Google login: {Email}", payload.Email);
