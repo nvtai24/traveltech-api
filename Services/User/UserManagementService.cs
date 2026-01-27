@@ -111,35 +111,6 @@ namespace TravelTechApi.Services.User
             return response;
         }
 
-        public async Task<AdminUserResponse> UpdateUserAsync(string userId, UpdateUserRequest request)
-        {
-            var user = await _context.Users
-                .Include(u => u.Avatar)
-                .FirstOrDefaultAsync(u => u.Id == userId);
-
-            if (user == null)
-            {
-                throw new NotFoundException($"User with id '{userId}' not found");
-            }
-
-            // Map only non-null values from request to user
-            _mapper.Map(request, user);
-            user.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Admin updated user {UserId}", userId);
-
-            await _auditLogService.LogAsync(
-                _currentUserService.UserId,
-                "Update",
-                "User",
-                userId,
-                $"Updated profile for user {user.Email}"
-            );
-
-            return await GetUserByIdAsync(userId);
-        }
-
         public async Task LockUserAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);

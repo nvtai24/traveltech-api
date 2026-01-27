@@ -18,10 +18,6 @@ namespace TravelTechApi.Services.User
         /// </summary>
         Task<AdminUserResponse> GetUserByIdAsync(string userId);
 
-        /// <summary>
-        /// Update user information
-        /// </summary>
-        Task<AdminUserResponse> UpdateUserAsync(string userId, UpdateUserRequest request);
 
         /// <summary>
         /// Lock user account

@@ -57,17 +57,6 @@ namespace TravelTechApi.Controllers
         }
 
         /// <summary>
-        /// Update user information
-        /// </summary>
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserRequest request)
-        {
-            var result = await _userManagementService.UpdateUserAsync(id, request);
-            _logger.LogInformation("Admin updated user {UserId}", id);
-            return this.Success(result, "User updated successfully");
-        }
-
-        /// <summary>
         /// Lock user account
         /// </summary>
         [HttpPost("{id}/lock")]
