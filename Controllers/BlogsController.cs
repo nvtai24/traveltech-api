@@ -30,7 +30,7 @@ namespace TravelTechApi.Controllers
         {
             var userId = _currentUserService.UserId;
             var result = await _blogService.CreateBlogAsync(userId!, request);
-            return CreatedAtAction(nameof(GetBlogByIdAdmin), new { id = result.Id }, result);
+            return this.Created("Blog created successfully", result);
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace TravelTechApi.Controllers
         {
             var userId = _currentUserService.UserId;
             await _blogService.DeleteBlogAsync(id, userId!);
-            return NoContent();
+            return this.Success("Blog deleted successfully");
         }
 
         /// <summary>
@@ -64,7 +64,11 @@ namespace TravelTechApi.Controllers
         public async Task<IActionResult> GetBlogById(int id)
         {
             var result = await _blogService.GetBlogByIdPublicAsync(id);
-            return Ok(result);
+            if (result == null)
+            {
+                return this.NotFound("Blog not found");
+            }
+            return this.Success(result, "Blog fetched successfully");
         }
 
         /// <summary>
@@ -75,7 +79,11 @@ namespace TravelTechApi.Controllers
         public async Task<IActionResult> GetBlogByIdAdmin(int id)
         {
             var result = await _blogService.GetBlogByIdAdminAsync(id);
-            return Ok(result);
+            if (result == null)
+            {
+                return this.NotFound("Blog not found");
+            }
+            return this.Success(result, "Blog fetched successfully");
         }
 
         /// <summary>
@@ -92,7 +100,7 @@ namespace TravelTechApi.Controllers
             if (pageSize > 100) pageSize = 100;
 
             var result = await _blogService.GetAllBlogsPublicAsync(page, pageSize, searchTerm);
-            return Ok(result);
+            return this.Success(result, "Blogs fetched successfully");
         }
 
         /// <summary>
@@ -111,7 +119,7 @@ namespace TravelTechApi.Controllers
             if (pageSize > 100) pageSize = 100;
 
             var result = await _blogService.GetAllBlogsAdminAsync(page, pageSize, searchTerm, isPublished);
-            return Ok(result);
+            return this.Success(result, "Blogs fetched successfully");
         }
     }
 }

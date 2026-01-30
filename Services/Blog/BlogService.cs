@@ -76,7 +76,7 @@ namespace TravelTechApi.Services.Blog
             await _context.SaveChangesAsync();
         }
 
-        public async Task<BlogPublicResponse> GetBlogByIdPublicAsync(int id)
+        public async Task<BlogPublicResponse?> GetBlogByIdPublicAsync(int id)
         {
             var blog = await _context.Blogs
                .Include(b => b.Author)
@@ -84,12 +84,12 @@ namespace TravelTechApi.Services.Blog
                .FirstOrDefaultAsync(b => b.Id == id && b.IsPublished);
 
             if (blog == null)
-                throw new KeyNotFoundException($"Blog with id {id} not found");
+                return null;
 
             return _mapper.Map<BlogPublicResponse>(blog);
         }
 
-        public async Task<BlogAdminResponse> GetBlogByIdAdminAsync(int id)
+        public async Task<BlogAdminResponse?> GetBlogByIdAdminAsync(int id)
         {
             var blog = await _context.Blogs
                .Include(b => b.Author)
@@ -100,7 +100,7 @@ namespace TravelTechApi.Services.Blog
                .FirstOrDefaultAsync(b => b.Id == id);
 
             if (blog == null)
-                throw new KeyNotFoundException($"Blog with id {id} not found");
+                return null;
 
             return _mapper.Map<BlogAdminResponse>(blog);
         }
