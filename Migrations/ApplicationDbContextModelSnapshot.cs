@@ -447,9 +447,14 @@ namespace TravelTechApi.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UpdatedById")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AuthorId");
+
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("Blogs");
                 });
@@ -1328,7 +1333,13 @@ namespace TravelTechApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TravelTechApi.Entities.ApplicationUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById");
+
                     b.Navigation("Author");
+
+                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("TravelTechApi.Entities.CloudinaryFileInfo", b =>

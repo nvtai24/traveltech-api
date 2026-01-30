@@ -13,7 +13,7 @@ using TravelTechApi.Data;
 namespace TravelTechApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260127035702_AddBlogUpdatedBy")]
+    [Migration("20260130033307_AddBlogUpdatedBy")]
     partial class AddBlogUpdatedBy
     {
         /// <inheritdoc />
@@ -450,9 +450,14 @@ namespace TravelTechApi.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UpdatedById")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AuthorId");
+
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("Blogs");
                 });
@@ -1331,7 +1336,13 @@ namespace TravelTechApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TravelTechApi.Entities.ApplicationUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById");
+
                     b.Navigation("Author");
+
+                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("TravelTechApi.Entities.CloudinaryFileInfo", b =>
