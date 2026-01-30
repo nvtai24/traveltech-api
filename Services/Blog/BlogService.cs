@@ -116,9 +116,9 @@ namespace TravelTechApi.Services.Blog
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 searchTerm = searchTerm.ToLower();
-                query = query.Where(b => b.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                                         b.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                                         b.Tags.Any(t => t.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+                query = query.Where(b => b.Title.ToLower().Contains(searchTerm) ||
+                                         b.Content.ToLower().Contains(searchTerm) ||
+                                         b.Tags.Any(t => t.ToLower().Contains(searchTerm)));
             }
 
             query = query.OrderByDescending(b => b.CreatedAt);
@@ -161,9 +161,9 @@ namespace TravelTechApi.Services.Blog
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 searchTerm = searchTerm.ToLower();
-                query = query.Where(b => b.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                                         b.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                                         b.Tags.Any(t => t.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+                query = query.Where(b => b.Title.ToLower().Contains(searchTerm) ||
+                                         b.Content.ToLower().Contains(searchTerm) ||
+                                         b.Tags.Any(t => t.ToLower().Contains(searchTerm)));
             }
 
             query = query.OrderByDescending(b => b.CreatedAt);
