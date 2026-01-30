@@ -249,6 +249,14 @@ namespace TravelTechApi.Services.Auth
                     // user.AvatarUrl = avatarUrl;
                     // await _userManager.UpdateAsync(user);
                 }
+
+                if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
+                {
+                    _logger.LogWarning("Login failed - user locked out: {Email}", user.Email);
+                    throw new UnauthorizedException($"Your account is locked until {user.LockoutEnd}. Please contact support.");
+                }
+
+
             }
 
             _logger.LogInformation("Google login successful for user: {UserId}, Email: {Email}", user.Id, user.Email);
