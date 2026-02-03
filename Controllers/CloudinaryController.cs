@@ -63,7 +63,7 @@ namespace TravelTechApi.Controllers
         /// <param name="width">Optional width for transformation</param>
         /// <param name="height">Optional height for transformation</param>
         /// <returns>Transformed image URL</returns>
-        [HttpGet("url/{publicId}")]
+        [HttpGet("url/{**publicId}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetImageUrl(string publicId, [FromQuery] int? width, [FromQuery] int? height)
         {
