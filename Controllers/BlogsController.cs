@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using TravelTechApi.Common.Constants;
 using TravelTechApi.Common.Extensions;
 using TravelTechApi.DTOs.Blog;
+using TravelTechApi.DTOs.BlogComment;
 using TravelTechApi.Services.Auth;
 using TravelTechApi.Services.Blog;
+using TravelTechApi.Services.BlogComment;
 
 namespace TravelTechApi.Controllers
 {
@@ -13,11 +15,13 @@ namespace TravelTechApi.Controllers
     public class BlogsController : ControllerBase
     {
         private readonly IBlogService _blogService;
+        private readonly IBlogCommentService _blogCommentService;
         private readonly ICurrentUserService _currentUserService;
 
-        public BlogsController(IBlogService blogService, ICurrentUserService currentUserService)
+        public BlogsController(IBlogService blogService, IBlogCommentService blogCommentService, ICurrentUserService currentUserService)
         {
             _blogService = blogService;
+            _blogCommentService = blogCommentService;
             _currentUserService = currentUserService;
         }
 
@@ -120,6 +124,35 @@ namespace TravelTechApi.Controllers
 
             var result = await _blogService.GetAllBlogsAdminAsync(page, pageSize, searchTerm, isPublished);
             return this.Success(result, "Blogs fetched successfully");
+        }
+
+        /// <summary>
+        /// Add a comment to a blog (Authenticated users)
+        /// </summary>
+        [HttpPost("{id}/comments")]
+        [Authorize]
+        public async Task<IActionResult> CreateComment(int id, [FromBody] CreateBlogCommentRequest request)
+        {
+            var userId = _currentUserService.UserId;
+            var result = await _blogCommentService.CreateCommentAsync(id, userId!, request);
+            return this.Created("Comment created successfully", result);
+        }
+
+        /// <summary>
+        /// Get comments for a blog (Public)
+        /// </summary>
+        [HttpGet("{id}/comments")]
+        public async Task<IActionResult> GetComments(
+            int id,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var result = await _blogCommentService.GetCommentsByBlogIdAsync(id, page, pageSize);
+            return this.Success(result, "Comments fetched successfully");
         }
     }
 }

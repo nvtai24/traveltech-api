@@ -51,6 +51,7 @@ namespace TravelTechApi.Data
         public DbSet<WebsiteFeedback> WebsiteFeedbacks { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<Blog> Blogs { get; set; }
+        public DbSet<BlogComment> BlogComments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -412,6 +413,30 @@ namespace TravelTechApi.Data
                     .WithMany(u => u.Blogs)
                     .HasForeignKey(e => e.AuthorId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure BlogComment
+            builder.Entity<BlogComment>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Content).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(e => e.Blog)
+                    .WithMany(b => b.Comments)
+                    .HasForeignKey(e => e.BlogId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Self-referencing relationship for replies
+                entity.HasOne(e => e.ParentComment)
+                    .WithMany(c => c.Replies)
+                    .HasForeignKey(e => e.ParentCommentId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

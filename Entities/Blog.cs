@@ -31,5 +31,7 @@ namespace TravelTechApi.Entities
         public bool IsPublished { get; set; }
 
         public List<string> Tags { get; set; } = new List<string>();
+
+        public virtual ICollection<BlogComment> Comments { get; set; } = new List<BlogComment>();
     }
 }
