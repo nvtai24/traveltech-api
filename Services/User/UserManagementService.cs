@@ -61,7 +61,29 @@ namespace TravelTechApi.Services.User
                 query = query.Where(u =>
                     (u.Email != null && u.Email.ToLower().Contains(term)) ||
                     (u.FirstName != null && u.FirstName.ToLower().Contains(term)) ||
-                    (u.LastName != null && u.LastName.ToLower().Contains(term)));
+                    (u.LastName != null && u.LastName.ToLower().Contains(term)) ||
+                    ((u.FirstName ?? "") + " " + (u.LastName ?? "")).ToLower().Contains(term) ||
+                    ((u.LastName ?? "") + " " + (u.FirstName ?? "")).ToLower().Contains(term));
+            }
+
+            // Filter by role before pagination
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                var roleEntity = await _roleManager.FindByNameAsync(role);
+                if (roleEntity != null)
+                {
+                    var userIdsInRole = await _context.UserRoles
+                        .Where(ur => ur.RoleId == roleEntity.Id)
+                        .Select(ur => ur.UserId)
+                        .ToListAsync();
+
+                    query = query.Where(u => userIdsInRole.Contains(u.Id));
+                }
+                else
+                {
+                    // Role doesn't exist, return empty result
+                    return PagedResult<AdminUserListItemResponse>.Create(new List<AdminUserListItemResponse>(), 0, page, pageSize);
+                }
             }
 
             var totalCount = await query.CountAsync();
@@ -77,10 +99,6 @@ namespace TravelTechApi.Services.User
             foreach (var user in users)
             {
                 var roles = await _userManager.GetRolesAsync(user);
-
-                // Filter by role if specified
-                if (!string.IsNullOrWhiteSpace(role) && !roles.Contains(role))
-                    continue;
 
                 var response = _mapper.Map<AdminUserListItemResponse>(user);
                 response.Roles = roles.ToList();
