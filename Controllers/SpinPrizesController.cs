@@ -19,6 +19,34 @@ namespace TravelTechApi.Controllers
             _spinPrizeService = spinPrizeService;
         }
 
+        // GET: api/SpinPrizes/config (Public)
+        [HttpGet("config")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetConfig()
+        {
+            var config = await _spinPrizeService.GetConfigAsync();
+            return this.Success(config, "Spin prize configuration retrieved successfully.");
+        }
+
+        // POST: api/SpinPrizes/config (Admin only)
+        [HttpPost("config")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SaveConfig([FromBody] SpinPrizeConfigDto configDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return this.Failed("Invalid input data.");
+            }
+
+            var result = await _spinPrizeService.SaveConfigAsync(configDto);
+            if (!result)
+            {
+                return this.Failed("Failed to save spin prize configuration to Redis.");
+            }
+
+            return this.Success("Spin prize configuration saved successfully.");
+        }
+
         // GET: api/SpinPrizes (Public, active only)
         [HttpGet]
         [AllowAnonymous]

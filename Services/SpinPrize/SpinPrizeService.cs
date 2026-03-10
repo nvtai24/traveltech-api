@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Json;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using TravelTechApi.Data;
 using TravelTechApi.DTOs.SpinPrize;
 using TravelTechApi.Entities;
@@ -14,11 +16,14 @@ namespace TravelTechApi.Services.SpinPrize
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IConnectionMultiplexer _redis;
+        private const string RedisConfigKey = "SpinPrize:Config";
 
-        public SpinPrizeService(ApplicationDbContext context, IMapper mapper)
+        public SpinPrizeService(ApplicationDbContext context, IMapper mapper, IConnectionMultiplexer redis)
         {
             _context = context;
             _mapper = mapper;
+            _redis = redis;
         }
 
         public async Task<IEnumerable<SpinPrizeDto>> GetAllAdminAsync()
@@ -79,6 +84,28 @@ namespace TravelTechApi.Services.SpinPrize
             _context.SpinPrizes.Remove(prize);
             var result = await _context.SaveChangesAsync();
             return result > 0;
+        }
+
+        public async Task<SpinPrizeConfigDto> GetConfigAsync()
+        {
+            var db = _redis.GetDatabase();
+            var json = await db.StringGetAsync(RedisConfigKey);
+
+            if (json.IsNullOrEmpty)
+            {
+                return new SpinPrizeConfigDto(); // Default properties configured in Dto
+            }
+
+            return JsonSerializer.Deserialize<SpinPrizeConfigDto>(json);
+        }
+
+        public async Task<bool> SaveConfigAsync(SpinPrizeConfigDto configDto)
+        {
+            configDto.UpdatedAt = DateTime.UtcNow;
+            var json = JsonSerializer.Serialize(configDto);
+
+            var db = _redis.GetDatabase();
+            return await db.StringSetAsync(RedisConfigKey, json);
         }
     }
 }
