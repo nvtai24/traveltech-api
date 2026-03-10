@@ -94,18 +94,36 @@ namespace TravelTechApi.Services.User
                 .Take(pageSize)
                 .ToListAsync();
 
-            var userResponses = new List<AdminUserListItemResponse>();
+            var userIds = users.Select(u => u.Id).ToList();
 
-            foreach (var user in users)
+            // Batch load roles for all users in one query
+            var userRolesMap = await _context.UserRoles
+                .Where(ur => userIds.Contains(ur.UserId))
+                .Join(_context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new { ur.UserId, RoleName = r.Name })
+                .GroupBy(x => x.UserId)
+                .ToDictionaryAsync(g => g.Key, g => g.Select(x => x.RoleName ?? string.Empty).ToList());
+
+            // Batch load subscription plans for all users in one query
+            var userPlansMap = await _context.UserPlanSubscriptions
+                .Include(s => s.SubscriptionPlan)
+                .Where(s => userIds.Contains(s.UserId) && s.EndDate > DateTime.UtcNow)
+                .GroupBy(s => s.UserId)
+                .Select(g => new
+                {
+                    UserId = g.Key,
+                    PlanName = g.OrderByDescending(s => s.SubscriptionPlan.Order)
+                                .Select(s => s.SubscriptionPlan.Name)
+                                .FirstOrDefault()
+                })
+                .ToDictionaryAsync(x => x.UserId, x => x.PlanName ?? "Basic");
+
+            var userResponses = users.Select(user =>
             {
-                var roles = await _userManager.GetRolesAsync(user);
-
                 var response = _mapper.Map<AdminUserListItemResponse>(user);
-                response.Roles = roles.ToList();
-                response.SubscriptionPlan = await _userPlanSubscriptionService.GetCurrentPlanNameAsync(user.Id);
-
-                userResponses.Add(response);
-            }
+                response.Roles = userRolesMap.GetValueOrDefault(user.Id, new List<string>());
+                response.SubscriptionPlan = userPlansMap.GetValueOrDefault(user.Id, "Basic");
+                return response;
+            }).ToList();
 
             return PagedResult<AdminUserListItemResponse>.Create(userResponses, totalCount, page, pageSize);
         }
