@@ -18,6 +18,7 @@ using TravelTechApi.Services.User;
 using TravelTechApi.Services.Audit;
 using TravelTechApi.Services.Blog;
 using TravelTechApi.Services.BlogComment;
+using TravelTechApi.Services.SpinPrize;
 
 namespace TravelTechApi.Common.Extensions
 {
@@ -59,6 +60,7 @@ namespace TravelTechApi.Common.Extensions
             services.AddScoped<IAuditLogService, AuditLogService>();
             services.AddScoped<IBlogService, BlogService>();
             services.AddScoped<IBlogCommentService, Services.BlogComment.BlogCommentService>();
+            services.AddScoped<ISpinPrizeService, SpinPrizeService>();
 
             // Register Hosted Services
             services.AddHostedService<TravelTechApi.Worker.PaymentCleanupWorker>();

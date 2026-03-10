@@ -27,6 +27,7 @@ namespace TravelTechApi.Data
         public DbSet<CloudinaryFileInfo> CloudinaryFileInfos { get; set; }
 
         // Travel Plan entities
+        public DbSet<SpinPrize> SpinPrizes { get; set; }
         public DbSet<Plan> Plans { get; set; }
         public DbSet<DailyItinerary> DailyItineraries { get; set; }
         public DbSet<Activity> Activities { get; set; }
@@ -437,7 +438,19 @@ namespace TravelTechApi.Data
                     .WithMany(c => c.Replies)
                     .HasForeignKey(e => e.ParentCommentId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+
             });
+
+            builder.Entity<SpinPrize>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.IsActive).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt);
+            });
+
         }
     }
 }
