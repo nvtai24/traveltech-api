@@ -21,6 +21,8 @@ namespace TravelTechApi.Entities
 
         public DateTime? Dob { get; set; }
 
+        public bool IsFirstLogin { get; set; } = true;
+
         /// <summary>
         /// Date when user was created
         /// </summary>

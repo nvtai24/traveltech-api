@@ -485,6 +485,14 @@ namespace TravelTechApi.Services.Auth
             var plan = await _userPlanSubscriptionService.GetCurrentPlanAsync(user.Id);
             userResponse.SubscriptionPlan = plan?.Name ?? string.Empty;
 
+            // Handle IsFirstLogin logic
+            if (user.IsFirstLogin)
+            {
+                user.IsFirstLogin = false;
+                _context.Users.Update(user); // Important to update user status
+                await _context.SaveChangesAsync();
+            }
+
             return new LoginResponse
             {
                 AccessToken = accessToken,
