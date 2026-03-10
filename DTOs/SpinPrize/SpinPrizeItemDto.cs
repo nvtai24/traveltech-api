@@ -6,9 +6,9 @@ namespace TravelTechApi.DTOs.SpinPrize
 {
     public class SpinPrizeItemDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         [Required]
-        public string Label { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
         public string? Color { get; set; }
         public string? Icon { get; set; }
     }
