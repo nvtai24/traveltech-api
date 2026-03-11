@@ -17,6 +17,5 @@ namespace TravelTechApi.DTOs.Auth
         public string AvatarUrl { get; set; } = string.Empty;
         public Gender? Gender { get; set; }
         public DateTime? Dob { get; set; }
-        public bool IsFirstLogin { get; set; }
     }
 }

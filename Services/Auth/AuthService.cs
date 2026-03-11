@@ -486,10 +486,11 @@ namespace TravelTechApi.Services.Auth
             userResponse.SubscriptionPlan = plan?.Name ?? string.Empty;
 
             // Handle IsFirstLogin logic
+            var isFirstLogin = user.IsFirstLogin;
             if (user.IsFirstLogin)
             {
                 user.IsFirstLogin = false;
-                _context.Users.Update(user); // Important to update user status
+                _context.Users.Update(user);
                 await _context.SaveChangesAsync();
             }
 
@@ -498,7 +499,8 @@ namespace TravelTechApi.Services.Auth
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes),
-                User = userResponse
+                User = userResponse,
+                IsFirstLogin = isFirstLogin
             };
         }
 
