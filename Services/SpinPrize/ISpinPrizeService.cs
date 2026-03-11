@@ -17,5 +17,6 @@ namespace TravelTechApi.Services.SpinPrize
         // Config from Redis
         Task<SpinPrizeConfigDto> GetConfigAsync();
         Task<bool> SaveConfigAsync(SpinPrizeConfigDto configDto);
+        Task<bool> ClearConfigAsync();
     }
 }

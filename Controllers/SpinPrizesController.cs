@@ -47,6 +47,20 @@ namespace TravelTechApi.Controllers
             return this.Success("Spin prize configuration saved successfully.");
         }
 
+        // DELETE: api/SpinPrizes/config (Admin only)
+        [HttpDelete("config")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ClearConfig()
+        {
+            var result = await _spinPrizeService.ClearConfigAsync();
+            if (!result)
+            {
+                return this.Failed("Failed to clear spin prize configuration from Redis.");
+            }
+
+            return this.Success("Spin prize configuration cleared successfully.");
+        }
+
         // GET: api/SpinPrizes (Public, active only)
         [HttpGet]
         [AllowAnonymous]

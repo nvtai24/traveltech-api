@@ -107,5 +107,11 @@ namespace TravelTechApi.Services.SpinPrize
             var db = _redis.GetDatabase();
             return await db.StringSetAsync(RedisConfigKey, json);
         }
+
+        public async Task<bool> ClearConfigAsync()
+        {
+            var db = _redis.GetDatabase();
+            return await db.KeyDeleteAsync(RedisConfigKey);
+        }
     }
 }
