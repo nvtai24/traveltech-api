@@ -53,7 +53,6 @@ namespace TravelTechApi.Services.Destination
             var query = _context.Destinations
                 .Include(d => d.Location)
                 .ThenInclude(l => l.Region)
-                .Include(d => d.Images)
                 .Where(d => d.IsVisible) // Enforce visibility for public API
                 .OrderBy(d => d.Name)
                 .AsQueryable();
@@ -131,7 +130,6 @@ namespace TravelTechApi.Services.Destination
             var query = _context.Destinations
                 .Include(d => d.Location)
                 .ThenInclude(l => l.Region)
-                .Include(d => d.Images)
                 .OrderByDescending(d => d.Id) // Newest first for admin
                 .AsQueryable();
 
@@ -163,7 +161,6 @@ namespace TravelTechApi.Services.Destination
             _logger.LogInformation("Getting destination by id for admin: {DestinationId}", id);
             var destination = await _context.Destinations
                 .Include(d => d.Location)
-                .Include(d => d.Images)
                 .Include(d => d.FAQs)
                 .FirstOrDefaultAsync(d => d.Id == id);
 
@@ -175,7 +172,6 @@ namespace TravelTechApi.Services.Destination
             _logger.LogInformation("Getting destination by id: {DestinationId}", id);
             var destination = await _context.Destinations
                 .Include(d => d.Location)
-                .Include(d => d.Images)
                 .Include(d => d.FAQs)
                 .FirstOrDefaultAsync(d => d.Id == id);
 
@@ -185,7 +181,6 @@ namespace TravelTechApi.Services.Destination
         {
             _logger.LogInformation("Getting destinations sharings by destination id: {DestinationId}", destinationId);
             var destinationSharings = await _context.DestinationSharings
-                .Include(ds => ds.Images)
                 .Include(ds => ds.User)
                 .Where(ds => ds.DestinationId == destinationId)
                 .ToListAsync();
@@ -300,7 +295,6 @@ namespace TravelTechApi.Services.Destination
 
             // Load related data for response
             await _context.Entry(destination).Reference(d => d.Location).LoadAsync();
-            await _context.Entry(destination).Collection(d => d.Images).LoadAsync();
             await _context.Entry(destination).Collection(d => d.FAQs).LoadAsync();
 
             await InvalidateDestinationsCache();
@@ -314,7 +308,6 @@ namespace TravelTechApi.Services.Destination
 
             var destination = await _context.Destinations
                 .Include(d => d.Location)
-                .Include(d => d.Images)
                 .Include(d => d.FAQs)
                 .FirstOrDefaultAsync(d => d.Id == id);
 
