@@ -23,8 +23,8 @@ namespace TravelTechApi.Services.Cloudinary
         // Allowed image extensions
         private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp" };
 
-        // Max file size: 10MB
-        private const long MaxFileSize = 10 * 1024 * 1024;
+        // Max file size: 20MB
+        private const long MaxFileSize = 20 * 1024 * 1024;
 
         public CloudinaryService(
             IOptions<CloudinarySettings> settings,
