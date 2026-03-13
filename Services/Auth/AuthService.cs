@@ -140,7 +140,6 @@ namespace TravelTechApi.Services.Auth
 
             // var user = await _userManager.FindByEmailAsync(loginDto.Email);
             var user = await _context.Users
-                .Include(u => u.Avatar)
                 .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
 
             if (user == null)
@@ -194,7 +193,6 @@ namespace TravelTechApi.Services.Auth
             }
 
             var user = await _context.Users
-                .Include(u => u.Avatar)
                 .FirstOrDefaultAsync(u => u.Email == payload.Email);
 
             if (user == null)

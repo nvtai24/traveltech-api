@@ -17,7 +17,7 @@ namespace TravelTechApi.Entities
         public List<string> Tags { get; set; } = new List<string>();
         public int LocationId { get; set; }
         public virtual Location Location { get; set; } = null!;
-        public virtual ICollection<CloudinaryFileInfo> Images { get; set; } = new List<CloudinaryFileInfo>();
+        public List<string> Images { get; set; } = new List<string>();
         public virtual ICollection<FAQ> FAQs { get; set; } = new List<FAQ>();
         public virtual ICollection<DestinationSharing> Sharings { get; set; } = new List<DestinationSharing>();
         public bool IsVisible { get; set; } = true;

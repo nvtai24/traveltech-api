@@ -11,7 +11,7 @@ namespace TravelTechApi.Entities
         public DateTime UpdatedAt { get; set; }
         public int DestinationId { get; set; }
         public virtual Destination Destination { get; set; } = null!;
-        public virtual ICollection<CloudinaryFileInfo> Images { get; set; } = new List<CloudinaryFileInfo>();
+        public List<string> Images { get; set; } = new List<string>();
 
         public string UserId { get; set; } = string.Empty;
         public virtual ApplicationUser User { get; set; } = null!;

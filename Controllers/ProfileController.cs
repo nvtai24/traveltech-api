@@ -55,7 +55,6 @@ namespace TravelTechApi.Controllers
             var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
             var user = _context.Users
-                .Include(u => u.Avatar)
                 .AsNoTracking() // Read-only
                 .FirstOrDefault(u => u.Id == userId);
 
@@ -97,7 +96,6 @@ namespace TravelTechApi.Controllers
             }
 
             var user = await _context.Users
-                .Include(u => u.Avatar)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
@@ -143,21 +141,18 @@ namespace TravelTechApi.Controllers
             if (request.Avatar != null)
             {
                 // Delete old avatar if exists
-                if (user.Avatar != null)
+                if (!string.IsNullOrEmpty(user.AvatarUrl))
                 {
-                    await _cloudinaryService.DeleteImageAsync(user.Avatar.PublicId);
-                    _context.CloudinaryFileInfos.Remove(user.Avatar);
-                    // No need to set user.Avatar = null, entity framework handles it via relationship or we set new one below
+                    var publicId = ExtractPublicIdFromUrl(user.AvatarUrl);
+                    if (!string.IsNullOrEmpty(publicId))
+                    {
+                        await _cloudinaryService.DeleteImageAsync(publicId);
+                    }
                 }
 
                 // Upload new avatar
                 var uploadResult = await _cloudinaryService.UploadImageAsync(request.Avatar, "avatars");
-
-                var avatarEntity = _mapper.Map<CloudinaryFileInfo>(uploadResult);
-                avatarEntity.CreatedAt = DateTime.UtcNow;
-
-                await _context.CloudinaryFileInfos.AddAsync(avatarEntity);
-                user.Avatar = avatarEntity;
+                user.AvatarUrl = uploadResult.SecureUrl;
                 isUpdated = true;
             }
 
@@ -183,6 +178,30 @@ namespace TravelTechApi.Controllers
 
 
             return this.Success(response, "Profile updated successfully");
+        }
+
+        private string ExtractPublicIdFromUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return string.Empty;
+            try
+            {
+                var uri = new Uri(url);
+                var segments = uri.Segments;
+                var uploadIndex = Array.IndexOf(segments, "upload/");
+                if (uploadIndex >= 0 && segments.Length > uploadIndex + 2)
+                {
+                    var pathAfterVersion = string.Join("", segments.Skip(uploadIndex + 2));
+                    var publicIdWithExt = Uri.UnescapeDataString(pathAfterVersion);
+                    var extIndex = publicIdWithExt.LastIndexOf('.');
+                    if (extIndex > 0)
+                    {
+                        return publicIdWithExt.Substring(0, extIndex);
+                    }
+                    return publicIdWithExt;
+                }
+            }
+            catch { }
+            return string.Empty;
         }
     }
 }

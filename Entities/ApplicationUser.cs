@@ -40,9 +40,7 @@ namespace TravelTechApi.Entities
 
         public virtual ICollection<DestinationSharing> DestinationSharings { get; set; } = new List<DestinationSharing>();
 
-        public string? AvatarId { get; set; }
-
-        public virtual CloudinaryFileInfo? Avatar { get; set; }
+        public string? AvatarUrl { get; set; }
 
         /// <summary>
         /// Navigation property for plan subscriptions

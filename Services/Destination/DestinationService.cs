@@ -214,7 +214,7 @@ namespace TravelTechApi.Services.Destination
             };
 
             // Upload images if provided
-            var uploadedImages = new List<CloudinaryFileInfo>();
+            var uploadedImages = new List<string>();
             if (dto.Images != null && dto.Images.Any())
             {
                 _logger.LogInformation("Uploading {Count} images for sharing", dto.Images.Count);
@@ -226,19 +226,9 @@ namespace TravelTechApi.Services.Destination
                     maxConcurrency: 10
                 );
 
-                // Process successful uploads
                 foreach (var result in uploadResults.Where(r => r.IsSuccess && r.Result != null))
                 {
-                    var imageInfo = new CloudinaryFileInfo
-                    {
-                        PublicId = result.Result!.PublicId,
-                        Url = result.Result.SecureUrl,
-                        SecureUrl = result.Result.SecureUrl,
-                        Format = result.Result.Format,
-                        ResourceType = result.Result.ResourceType,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    uploadedImages.Add(imageInfo);
+                    uploadedImages.Add(result.Result!.SecureUrl);
                 }
 
                 _logger.LogInformation("Successfully uploaded {SuccessCount}/{TotalCount} images",
@@ -288,7 +278,7 @@ namespace TravelTechApi.Services.Destination
                 // Process successful uploads
                 var uploadedImages = uploadResults
                     .Where(r => r.IsSuccess && r.Result != null)
-                    .Select(r => _mapper.Map<CloudinaryFileInfo>(r.Result))
+                    .Select(r => r.Result.SecureUrl)
                     .ToList();
 
 
@@ -366,7 +356,7 @@ namespace TravelTechApi.Services.Destination
             {
                 // Identify images to remove (in DB but not in kept list)
                 var imagesToRemove = destination.Images
-                    .Where(img => !dto.ExistingImageUrls.Contains(img.Url) && !dto.ExistingImageUrls.Contains(img.SecureUrl))
+                    .Where(imgUrl => !dto.ExistingImageUrls.Contains(imgUrl))
                     .ToList();
 
                 if (imagesToRemove.Any())
@@ -375,8 +365,8 @@ namespace TravelTechApi.Services.Destination
 
                     // Collect PublicIds for Cloudinary deletion
                     var publicIdsToDelete = imagesToRemove
-                        .Where(img => !string.IsNullOrEmpty(img.PublicId))
-                        .Select(img => img.PublicId)
+                        .Select(imgUrl => ExtractPublicIdFromUrl(imgUrl))
+                        .Where(id => !string.IsNullOrEmpty(id))
                         .ToList();
 
                     if (publicIdsToDelete.Any())
@@ -385,9 +375,9 @@ namespace TravelTechApi.Services.Destination
                     }
 
                     // Remove from database/collection
-                    foreach (var img in imagesToRemove)
+                    foreach (var imgUrl in imagesToRemove)
                     {
-                        destination.Images.Remove(img);
+                        destination.Images.Remove(imgUrl);
                     }
                 }
             }
@@ -412,7 +402,7 @@ namespace TravelTechApi.Services.Destination
                 // Process successful uploads
                 var uploadedImages = uploadResults
                     .Where(r => r.IsSuccess && r.Result != null)
-                    .Select(r => _mapper.Map<CloudinaryFileInfo>(r.Result))
+                    .Select(r => r.Result.SecureUrl)
                     .ToList();
 
                 // Append new images to existing ones
@@ -481,6 +471,30 @@ namespace TravelTechApi.Services.Destination
             await InvalidateDestinationsCache();
 
             _logger.LogInformation("Destination deleted successfully: {DestinationId}", id);
+        }
+
+        private string ExtractPublicIdFromUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return string.Empty;
+            try
+            {
+                var uri = new Uri(url);
+                var segments = uri.Segments;
+                var uploadIndex = Array.IndexOf(segments, "upload/");
+                if (uploadIndex >= 0 && segments.Length > uploadIndex + 2)
+                {
+                    var pathAfterVersion = string.Join("", segments.Skip(uploadIndex + 2));
+                    var publicIdWithExt = Uri.UnescapeDataString(pathAfterVersion);
+                    var extIndex = publicIdWithExt.LastIndexOf('.');
+                    if (extIndex > 0)
+                    {
+                        return publicIdWithExt.Substring(0, extIndex);
+                    }
+                    return publicIdWithExt;
+                }
+            }
+            catch { }
+            return string.Empty;
         }
     }
 }

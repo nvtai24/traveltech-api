@@ -80,7 +80,6 @@ namespace TravelTechApi.Services.Blog
         {
             var blog = await _context.Blogs
                .Include(b => b.Author)
-               .ThenInclude(u => u.Avatar)
                .FirstOrDefaultAsync(b => b.Id == id && b.IsPublished);
 
             if (blog == null)
@@ -93,10 +92,7 @@ namespace TravelTechApi.Services.Blog
         {
             var blog = await _context.Blogs
                .Include(b => b.Author)
-               .ThenInclude(u => u.Avatar)
-               // Suppress null warning with '!'. EF Core handles the null check in SQL (Left Join).
                .Include(b => b.UpdatedBy)
-               .ThenInclude(u => u!.Avatar)
                .FirstOrDefaultAsync(b => b.Id == id);
 
             if (blog == null)
@@ -109,7 +105,6 @@ namespace TravelTechApi.Services.Blog
         {
             var query = _context.Blogs
                 .Include(b => b.Author)
-                .ThenInclude(u => u.Avatar)
                 .Where(b => b.IsPublished)
                 .AsQueryable();
 
@@ -145,12 +140,7 @@ namespace TravelTechApi.Services.Blog
         {
             var query = _context.Blogs
                 .Include(b => b.Author)
-                .ThenInclude(u => u.Avatar)
-                // UpdatedBy is nullable. We use '!' to suppress the compiler warning because
-                // EF Core translates this to a SQL LEFT JOIN and handles the null check database-side.
-                // It does NOT execute this as C# code, so no NullReferenceException will occur.
                 .Include(b => b.UpdatedBy)
-                .ThenInclude(u => u!.Avatar)
                 .AsQueryable();
 
             if (isPublished.HasValue)
@@ -194,13 +184,6 @@ namespace TravelTechApi.Services.Blog
                 await _context.Entry(blog)
                    .Reference(b => b.Author)
                    .LoadAsync();
-
-                if (blog.Author != null)
-                {
-                    await _context.Entry(blog.Author)
-                      .Reference(u => u.Avatar)
-                      .LoadAsync();
-                }
             }
 
             // Load UpdatedBy if present
@@ -209,13 +192,6 @@ namespace TravelTechApi.Services.Blog
                 await _context.Entry(blog)
                    .Reference(b => b.UpdatedBy)
                    .LoadAsync();
-
-                if (blog.UpdatedBy != null)
-                {
-                    await _context.Entry(blog.UpdatedBy)
-                      .Reference(u => u.Avatar)
-                      .LoadAsync();
-                }
             }
         }
     }

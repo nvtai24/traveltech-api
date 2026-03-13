@@ -13,7 +13,7 @@ namespace TravelTechApi.Mapping
         public UserProfile()
         {
             CreateMap<ApplicationUser, UserResponse>()
-                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.Avatar != null ? src.Avatar.SecureUrl : string.Empty));
+                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.AvatarUrl ?? string.Empty));
 
             CreateMap<RegisterRequest, ApplicationUser>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
@@ -21,14 +21,14 @@ namespace TravelTechApi.Mapping
 
             // Admin User Management mappings
             CreateMap<ApplicationUser, AdminUserResponse>()
-                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.Avatar != null ? src.Avatar.SecureUrl : string.Empty))
+                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.AvatarUrl ?? string.Empty))
                 .ForMember(dest => dest.IsLocked, opt => opt.MapFrom(src => src.LockoutEnd.HasValue && src.LockoutEnd > DateTimeOffset.UtcNow))
                 .ForMember(dest => dest.LockoutEnd, opt => opt.MapFrom(src => src.LockoutEnd.HasValue ? src.LockoutEnd.Value.UtcDateTime : (DateTime?)null))
                 .ForMember(dest => dest.Roles, opt => opt.Ignore()) // Set manually
                 .ForMember(dest => dest.SubscriptionPlan, opt => opt.Ignore()); // Set manually
 
             CreateMap<ApplicationUser, AdminUserListItemResponse>()
-                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.Avatar != null ? src.Avatar.SecureUrl : string.Empty))
+                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.AvatarUrl ?? string.Empty))
                 .ForMember(dest => dest.IsLocked, opt => opt.MapFrom(src => src.LockoutEnd.HasValue && src.LockoutEnd > DateTimeOffset.UtcNow))
                 .ForMember(dest => dest.Roles, opt => opt.Ignore()) // Set manually
                 .ForMember(dest => dest.SubscriptionPlan, opt => opt.Ignore()); // Set manually

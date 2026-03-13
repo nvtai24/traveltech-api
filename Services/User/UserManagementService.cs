@@ -50,7 +50,6 @@ namespace TravelTechApi.Services.User
         public async Task<PagedResult<AdminUserListItemResponse>> GetAllUsersAsync(int page, int pageSize, string? searchTerm = null, string? role = null)
         {
             var query = _context.Users
-                .Include(u => u.Avatar)
                 .AsNoTracking()
                 .AsQueryable();
 
@@ -131,7 +130,6 @@ namespace TravelTechApi.Services.User
         public async Task<AdminUserResponse> GetUserByIdAsync(string userId)
         {
             var user = await _context.Users
-                .Include(u => u.Avatar)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == userId);
 

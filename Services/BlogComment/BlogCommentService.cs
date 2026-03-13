@@ -53,9 +53,7 @@ namespace TravelTechApi.Services.BlogComment
 
             if (comment.User != null)
             {
-                await _context.Entry(comment.User)
-                    .Reference(u => u.Avatar)
-                    .LoadAsync();
+                // Avatar is now a string property, so we don't need to load it explicitly
             }
 
             return _mapper.Map<BlogCommentResponse>(comment);
@@ -71,10 +69,8 @@ namespace TravelTechApi.Services.BlogComment
             // Only get root-level comments (no parent)
             var query = _context.BlogComments
                 .Include(c => c.User)
-                .ThenInclude(u => u.Avatar)
                 .Include(c => c.Replies)
                     .ThenInclude(r => r.User)
-                    .ThenInclude(u => u.Avatar)
                 .Where(c => c.BlogId == blogId && c.ParentCommentId == null)
                 .OrderByDescending(c => c.CreatedAt);
 

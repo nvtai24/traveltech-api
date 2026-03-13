@@ -24,7 +24,7 @@ namespace TravelTechApi.Data
         public DbSet<Region> Regions { get; set; }
         public DbSet<FAQ> FAQs { get; set; }
         public DbSet<DestinationSharing> DestinationSharings { get; set; }
-        public DbSet<CloudinaryFileInfo> CloudinaryFileInfos { get; set; }
+
 
         // Travel Plan entities
         public DbSet<SpinPrize> SpinPrizes { get; set; }
@@ -83,10 +83,6 @@ namespace TravelTechApi.Data
                 entity.Property(e => e.LastName).HasMaxLength(100);
                 entity.Property(e => e.Gender).HasConversion<string>();
 
-                entity.HasOne(e => e.Avatar)
-                    .WithMany()
-                    .HasForeignKey(e => e.AvatarId)
-                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             // Configure Destination
@@ -155,14 +151,7 @@ namespace TravelTechApi.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Configure CloudinaryFileInfo
-            builder.Entity<CloudinaryFileInfo>(entity =>
-            {
-                entity.Property(e => e.PublicId).IsRequired();
-                entity.Property(e => e.Url).IsRequired();
-                entity.Property(e => e.ResourceType).IsRequired();
-                entity.Property(e => e.CreatedAt).IsRequired();
-            });
+
 
             // Configure Plan
             builder.Entity<Plan>(entity =>

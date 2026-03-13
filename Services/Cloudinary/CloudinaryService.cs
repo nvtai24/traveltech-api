@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using TravelTechApi.Common.Settings;
 using TravelTechApi.Data;
 using TravelTechApi.DTOs.Cloudinary;
-using TravelTechApi.Entities;
+// using TravelTechApi.Entities;
 
 namespace TravelTechApi.Services.Cloudinary
 {
@@ -18,7 +18,7 @@ namespace TravelTechApi.Services.Cloudinary
         private readonly ILogger<CloudinaryService> _logger;
         private readonly CloudinarySettings _settings;
         private readonly IMapper _mapper;
-        private readonly ApplicationDbContext _context;
+
 
         // Allowed image extensions
         private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp" };
@@ -29,13 +29,11 @@ namespace TravelTechApi.Services.Cloudinary
         public CloudinaryService(
             IOptions<CloudinarySettings> settings,
             ILogger<CloudinaryService> logger,
-            IMapper mapper,
-            ApplicationDbContext context)
+            IMapper mapper)
         {
             _settings = settings.Value;
             _logger = logger;
             _mapper = mapper;
-            _context = context;
 
             // Initialize Cloudinary account
             var account = new Account(
@@ -128,16 +126,7 @@ namespace TravelTechApi.Services.Cloudinary
                     CreatedAt = uploadResult.CreatedAt
                 };
 
-                var fileInfo = _mapper.Map<CloudinaryFileInfo>(result);
 
-
-                // TODO: Save to database, but first we need to add the ImageId to the Destination entity
-                // _context.CloudinaryFileInfos.Add(fileInfo);
-                // await _context.SaveChangesAsync();
-
-                // Should add to destination first, then save changes
-                // _context.Destinations.Add(new Destination { ImageId = fileInfo.Id });
-                // await _context.SaveChangesAsync();
 
                 return result;
             }
