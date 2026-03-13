@@ -4,7 +4,7 @@ using TravelTechApi.Common.Filters;
 using TravelTechApi.Common.Settings;
 using TravelTechApi.Services.AI;
 using TravelTechApi.Services.Auth;
-using TravelTechApi.Services.Cloudinary;
+using TravelTechApi.Services.File;
 using TravelTechApi.Services.Contact;
 using TravelTechApi.Services.Destination;
 using TravelTechApi.Services.Email;
@@ -42,7 +42,7 @@ namespace TravelTechApi.Common.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IEmailService, SmtpEmailService>();
-            services.AddScoped<ICloudinaryService, CloudinaryService>();
+            services.AddScoped<IFileService, S3Service>();
             services.AddScoped<IRegionService, RegionService>();
             services.AddScoped<ILocationService, LocationService>();
             services.AddScoped<IDestinationService, DestinationService>();
@@ -80,8 +80,8 @@ namespace TravelTechApi.Common.Extensions
             // JWT Settings
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
 
-            // Cloudinary Settings
-            services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
+            // AWS Settings
+            services.Configure<AwsSettings>(configuration.GetSection("AwsSettings"));
 
             // AI Settings
             services.Configure<AISettings>(configuration.GetSection("AISettings"));

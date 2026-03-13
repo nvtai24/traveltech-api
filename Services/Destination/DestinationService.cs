@@ -5,7 +5,7 @@ using TravelTechApi.Data;
 using TravelTechApi.DTOs.Common;
 using TravelTechApi.DTOs.Destination;
 using TravelTechApi.Entities;
-using TravelTechApi.Services.Cloudinary;
+using TravelTechApi.Services.File;
 
 namespace TravelTechApi.Services.Destination
 {
@@ -17,20 +17,20 @@ namespace TravelTechApi.Services.Destination
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<DestinationService> _logger;
-        private readonly ICloudinaryService _cloudinaryService;
+        private readonly IFileService _fileService;
         private readonly StackExchange.Redis.IConnectionMultiplexer _redis;
 
         public DestinationService(
             ApplicationDbContext context,
             IMapper mapper,
             ILogger<DestinationService> logger,
-            ICloudinaryService cloudinaryService,
+            IFileService fileService,
             StackExchange.Redis.IConnectionMultiplexer redis)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
-            _cloudinaryService = cloudinaryService;
+            _fileService = fileService;
             _redis = redis;
         }
 
@@ -219,16 +219,16 @@ namespace TravelTechApi.Services.Destination
             {
                 _logger.LogInformation("Uploading {Count} images for sharing", dto.Images.Count);
 
-                // Upload images in parallel using Cloudinary bulk upload
-                var uploadResults = await _cloudinaryService.UploadMultipleImagesAsync(
+                // Upload images in parallel using FileService
+                var uploadResults = await _fileService.UploadMultipleImagesAsync(
                     dto.Images,
                     folder: $"destinations/{destinationId}/sharings",
                     maxConcurrency: 10
                 );
 
-                foreach (var result in uploadResults.Where(r => r.IsSuccess && r.Result != null))
+                foreach (var url in uploadResults)
                 {
-                    uploadedImages.Add(result.Result!.SecureUrl);
+                    uploadedImages.Add(url);
                 }
 
                 _logger.LogInformation("Successfully uploaded {SuccessCount}/{TotalCount} images",
@@ -269,17 +269,14 @@ namespace TravelTechApi.Services.Destination
             {
                 _logger.LogInformation("Uploading {Count} images for destination", dto.Images.Count);
 
-                var uploadResults = await _cloudinaryService.UploadMultipleImagesAsync(
+                var uploadResults = await _fileService.UploadMultipleImagesAsync(
                     dto.Images,
                     folder: "destinations",
                     maxConcurrency: 10
                 );
 
                 // Process successful uploads
-                var uploadedImages = uploadResults
-                    .Where(r => r.IsSuccess && r.Result != null)
-                    .Select(r => r.Result.SecureUrl)
-                    .ToList();
+                var uploadedImages = uploadResults.ToList();
 
 
                 destination.Images = uploadedImages;
@@ -363,15 +360,15 @@ namespace TravelTechApi.Services.Destination
                 {
                     _logger.LogInformation("Removing {Count} images from destination {DestinationId}", imagesToRemove.Count, id);
 
-                    // Collect PublicIds for Cloudinary deletion
-                    var publicIdsToDelete = imagesToRemove
-                        .Select(imgUrl => ExtractPublicIdFromUrl(imgUrl))
+                    // Collect FileKeys for S3 deletion
+                    var fileKeysToDelete = imagesToRemove
+                        .Select(imgUrl => ExtractFileKeyFromUrl(imgUrl))
                         .Where(id => !string.IsNullOrEmpty(id))
                         .ToList();
 
-                    if (publicIdsToDelete.Any())
+                    if (fileKeysToDelete.Any())
                     {
-                        await _cloudinaryService.DeleteMultipleImagesAsync(publicIdsToDelete);
+                        await _fileService.DeleteMultipleImagesAsync(fileKeysToDelete);
                     }
 
                     // Remove from database/collection
@@ -393,17 +390,14 @@ namespace TravelTechApi.Services.Destination
             {
                 _logger.LogInformation("Uploading {Count} new images for destination {DestinationId}", dto.Images.Count, id);
 
-                var uploadResults = await _cloudinaryService.UploadMultipleImagesAsync(
+                var uploadResults = await _fileService.UploadMultipleImagesAsync(
                     dto.Images,
                     folder: "destinations",
                     maxConcurrency: 10
                 );
 
                 // Process successful uploads
-                var uploadedImages = uploadResults
-                    .Where(r => r.IsSuccess && r.Result != null)
-                    .Select(r => r.Result.SecureUrl)
-                    .ToList();
+                var uploadedImages = uploadResults.ToList();
 
                 // Append new images to existing ones
                 foreach (var image in uploadedImages)
@@ -473,25 +467,13 @@ namespace TravelTechApi.Services.Destination
             _logger.LogInformation("Destination deleted successfully: {DestinationId}", id);
         }
 
-        private string ExtractPublicIdFromUrl(string url)
+        private string ExtractFileKeyFromUrl(string url)
         {
             if (string.IsNullOrEmpty(url)) return string.Empty;
             try
             {
                 var uri = new Uri(url);
-                var segments = uri.Segments;
-                var uploadIndex = Array.IndexOf(segments, "upload/");
-                if (uploadIndex >= 0 && segments.Length > uploadIndex + 2)
-                {
-                    var pathAfterVersion = string.Join("", segments.Skip(uploadIndex + 2));
-                    var publicIdWithExt = Uri.UnescapeDataString(pathAfterVersion);
-                    var extIndex = publicIdWithExt.LastIndexOf('.');
-                    if (extIndex > 0)
-                    {
-                        return publicIdWithExt.Substring(0, extIndex);
-                    }
-                    return publicIdWithExt;
-                }
+                return uri.AbsolutePath.TrimStart('/');
             }
             catch { }
             return string.Empty;

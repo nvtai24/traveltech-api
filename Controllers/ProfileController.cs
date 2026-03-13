@@ -7,7 +7,7 @@ using TravelTechApi.Data;
 using TravelTechApi.DTOs.Auth;
 using TravelTechApi.DTOs.Profile;
 using TravelTechApi.Entities;
-using TravelTechApi.Services.Cloudinary;
+using TravelTechApi.Services.File;
 using System.Security.Claims;
 using AutoMapper;
 using TravelTechApi.Services.UserPlanSubscription;
@@ -20,7 +20,7 @@ namespace TravelTechApi.Controllers
     public class ProfileController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly ICloudinaryService _cloudinaryService;
+        private readonly IFileService _fileService;
         private readonly ApplicationDbContext _context;
         private readonly ILogger<ProfileController> _logger;
         private readonly IMapper _mapper;
@@ -28,14 +28,14 @@ namespace TravelTechApi.Controllers
 
         public ProfileController(
             UserManager<ApplicationUser> userManager,
-            ICloudinaryService cloudinaryService,
+            IFileService fileService,
             ApplicationDbContext context,
             ILogger<ProfileController> logger,
             IMapper mapper,
             IUserPlanSubscriptionService userPlanSubscriptionService)
         {
             _userManager = userManager;
-            _cloudinaryService = cloudinaryService;
+            _fileService = fileService;
             _context = context;
             _logger = logger;
             _mapper = mapper;
@@ -143,16 +143,16 @@ namespace TravelTechApi.Controllers
                 // Delete old avatar if exists
                 if (!string.IsNullOrEmpty(user.AvatarUrl))
                 {
-                    var publicId = ExtractPublicIdFromUrl(user.AvatarUrl);
-                    if (!string.IsNullOrEmpty(publicId))
+                    var fileKey = ExtractFileKeyFromUrl(user.AvatarUrl);
+                    if (!string.IsNullOrEmpty(fileKey))
                     {
-                        await _cloudinaryService.DeleteImageAsync(publicId);
+                        await _fileService.DeleteImageAsync(fileKey);
                     }
                 }
 
                 // Upload new avatar
-                var uploadResult = await _cloudinaryService.UploadImageAsync(request.Avatar, "avatars");
-                user.AvatarUrl = uploadResult.SecureUrl;
+                var uploadUrl = await _fileService.UploadImageAsync(request.Avatar, "avatars");
+                user.AvatarUrl = uploadUrl;
                 isUpdated = true;
             }
 
@@ -180,25 +180,13 @@ namespace TravelTechApi.Controllers
             return this.Success(response, "Profile updated successfully");
         }
 
-        private string ExtractPublicIdFromUrl(string url)
+        private string ExtractFileKeyFromUrl(string url)
         {
             if (string.IsNullOrEmpty(url)) return string.Empty;
             try
             {
                 var uri = new Uri(url);
-                var segments = uri.Segments;
-                var uploadIndex = Array.IndexOf(segments, "upload/");
-                if (uploadIndex >= 0 && segments.Length > uploadIndex + 2)
-                {
-                    var pathAfterVersion = string.Join("", segments.Skip(uploadIndex + 2));
-                    var publicIdWithExt = Uri.UnescapeDataString(pathAfterVersion);
-                    var extIndex = publicIdWithExt.LastIndexOf('.');
-                    if (extIndex > 0)
-                    {
-                        return publicIdWithExt.Substring(0, extIndex);
-                    }
-                    return publicIdWithExt;
-                }
+                return uri.AbsolutePath.TrimStart('/');
             }
             catch { }
             return string.Empty;
